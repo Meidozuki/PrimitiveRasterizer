@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19)
 project(Rasterizer)
 set(CMAKE_CXX_STANDARD 17)
-#set(CMAKE_CXX_FLAGS -O1)
+set(CMAKE_CXX_FLAGS -O1)
 
 #configure_file(header_config.h.in header_config.h)
 
@@ -23,9 +23,10 @@ add_executable(Rasterizer ${SRC_CPP})
 
 target_link_libraries(Rasterizer ${OpenCV_LIBS})
 
-target_include_directories(Rasterizer PUBLIC
-        "${PROJECT_BINARY_DIR}"
-        )
+#target_include_directories(Rasterizer PUBLIC
+#        "${PROJECT_BINARY_DIR}"
+#        )
+
 
 add_subdirectory(src)
 add_subdirectory(googletest)
