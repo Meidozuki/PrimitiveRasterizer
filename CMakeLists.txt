@@ -23,9 +23,11 @@ add_executable(Rasterizer ${SRC_CPP})
 
 target_link_libraries(Rasterizer ${OpenCV_LIBS})
 
-target_include_directories(Rasterizer PUBLIC
-        "${PROJECT_BINARY_DIR}"
-        )
+#target_include_directories(Rasterizer PUBLIC
+#        "${PROJECT_BINARY_DIR}"
+#        )
+
+add_executable(CmpTime time_compare.cpp)
 
 add_subdirectory(src)
 add_subdirectory(googletest)
