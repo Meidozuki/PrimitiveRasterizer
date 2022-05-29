@@ -10,6 +10,7 @@
 #include "rasterizer.hpp"
 
 using std::cout;
+using std::endl;
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
@@ -17,7 +18,7 @@ int main() {
     const int height=300,width=400;
     Rasterizer raster(height,width);
 
-    raster.drawLine({100,100,0},{200,200,0});
+    raster.drawLine({100,100,0},{200,250,0});
 
     cv::Mat image(height,width,CV_32FC3);
     cv::eigen2cv(raster.framebuffer(),image);

@@ -12,7 +12,9 @@
 #include <Eigen/Core>
 #include "unsupported/Eigen/CXX11/Tensor"
 
-#define DEBUG_MODE 1
+#ifndef DEBUG_MODE
+  #define DEBUG_MODE 1
+#endif
 #if DEBUG_MODE
 #include <sstream>
 using std::stringstream;
@@ -38,7 +40,9 @@ public:
     const int width() const {return width_;}
     const int height() const {return height_;}
     const auto & framebuffer() {return frame_buffer_;}
-//    std::tuple<int, int> get_framebuffer_shape() {return {frame_buffer_.size(),frame_buffer_.cols()};}
+    std::tuple<int, int> get_framebuffer_shape() {
+        return {frame_buffer_.dimension(0),frame_buffer_.dimension(1)};
+    }
 
     inline void setPixel(int x,int y,const ColorType& color);
 
@@ -62,9 +66,9 @@ inline void Rasterizer::setPixel(int x,int y,const ColorType& color) {
     }
 #endif
 
-    frame_buffer_(x,y,0)=color[0];
-    frame_buffer_(x,y,1)=color[1];
-    frame_buffer_(x,y,2)=color[2];
+    frame_buffer_(x, y, 0) = color[0];
+    frame_buffer_(x, y, 1) = color[1];
+    frame_buffer_(x, y, 2) = color[2];
 }
 
 
