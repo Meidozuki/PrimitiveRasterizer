@@ -10,11 +10,12 @@
 
 #include "gtest/gtest.h"
 
-#define DEBUG_MODE 0
-#include "rasterizer.cpp"
+#define DEBUG_MODE 1
+#include "drawing_methods.hpp"
+//#include "drawing_methods.cpp"
 
 using namespace std;
-using namespace lineAlgorithm;
+using namespace line_drawing;
 
 class TimeCompareFixture : public ::testing::Test{
  protected:
@@ -26,10 +27,10 @@ class TimeCompareFixture : public ::testing::Test{
     int x1,x2,y1,y2;
 
     virtual void SetUp () {
-        n_repeat=400000;
+        n_repeat=100000;
         e=default_random_engine(clock());
-        u=uniform_int_distribution<int> (0,799);
-        r=Rasterizer(800,800);
+        u=uniform_int_distribution<int> (0,899);
+        r=Rasterizer(1200,900);
 
         x1 = u(e), y1 = u(e), x2 = u(e), y2 = u(e);
     }
@@ -59,7 +60,7 @@ TEST_F(TimeCompareFixture, simple_Bresen) {
     for (i=0;i < n_repeat;++i) {
         if (RANDOM)
             x1 = u(e), y1 = u(e), x2 = u(e), y2 = u(e);
-        drawLine_Bresenham_simple(x1,y1,x2,y2,r);
+        drawLine_MidpointLineAlgorithm(x1, y1, x2, y2, r);
     }
     end=clock();
     cout << "time: " << end-begin << endl;
@@ -207,28 +208,30 @@ TEST_F(TimeCompareFixture, Bresenham2) {
 #include <cstdint>
 void drawLine_Bresenham21(int x1, int y1, int x2, int y2, Rasterizer &r) {
     //多分支
-    bool steep=std::abs(y2-y1) > std::abs(x2-x1);
+    bool steep = std::abs(y2 - y1) > std::abs(x2 - x1);
     if (steep) { // x和y直接分支
-        swap(x1,y1);
-        swap(x2,y2);
+        swap(x1, y1);
+        swap(x2, y2);
     }
 
+    //统一不同象限增长
     int8_t x_inc = x1 <= x2 ? 1 : -1;
     int8_t y_inc = y1 <= y2 ? 1 : -1;
 
     int dx = std::abs(x2 - x1), dy = std::abs(y2 - y1);
-    int epsilon = 0;
     ColorType color{1.0f, 1.0f, 1.0f};
 
+    int epsilon = 0;
     int x = x1, y = y1;
-    for (; x != x2; x+=x_inc) {
+    for (; x != x2; x += x_inc) {
         if (2 * (epsilon + dy) < dx) {
             epsilon = epsilon + dy;
         }
         else {
             epsilon = epsilon + (dy - dx);
-            y+=y_inc;
+            y += y_inc;
         }
+
         if (steep)
             r.setPixel(y, x, color);
         else
@@ -302,6 +305,47 @@ TEST_F(TimeCompareFixture, Bresenham22) {
 }
 
 
+void drawLine_Bresenham20(int x1, int y1, int x2, int y2, Rasterizer &r) {
+    //多分支
+    bool steep=std::abs(y2-y1) > std::abs(x2-x1);
+    if (steep) {
+        swap(x1,y1);
+        swap(x2,y2);
+    }
+
+    int8_t x_inc = x1 <= x2 ? 1 : -1;
+    int8_t y_inc = y1 <= y2 ? 1 : -1;
+
+    int dx = std::abs(x2 - x1), dy = std::abs(y2 - y1);
+    int epsilon = 0;
+    ColorType color{1.0f, 1.0f, 1.0f};
+
+    int x = x1, y = y1;
+    for (; x != x2; x += x_inc) {
+        epsilon += dy << 1;
+        if (epsilon > dx) {
+            epsilon -= dx << 1;
+            y += y_inc;
+        }
+
+        if (steep)
+            r.setPixel(y, x, color);
+        else
+            r.setPixel(x, y, color);
+    }
+}
+TEST_F(TimeCompareFixture, Bresenham20) {
+    int i;
+    clock_t begin,end;
+    begin=clock();
+    for (i=0;i < n_repeat;++i) {
+        if (RANDOM)
+            x1 = u(e), y1 = u(e), x2 = u(e), y2 = u(e);
+        drawLine_Bresenham20(x1,y1,x2,y2,r);
+    }
+    end=clock();
+    cout << "time: " << end-begin << endl;
+}
 
 int main (int argc,char** argv) {
     testing::InitGoogleTest();

@@ -8,22 +8,23 @@
 #include <iostream>
 #include <stdexcept>
 #include <tuple>
+#include <sstream>
 
 #include <Eigen/Core>
 #include "unsupported/Eigen/CXX11/Tensor"
 
+#include "triangle.hpp"
+
 #ifndef DEBUG_MODE
   #define DEBUG_MODE 1
-#endif
-#if DEBUG_MODE
-#include <sstream>
-using std::stringstream;
 #endif
 
 typedef float DType;
 typedef Eigen::Vector3f ColorType;
 using Eigen::Tensor;
 using Eigen::Dynamic;
+using Eigen::Vector3f;
+using std::stringstream;
 
 class Rasterizer {
 private:
@@ -46,7 +47,9 @@ public:
 
     inline void setPixel(int x,int y,const ColorType& color);
 
-    void drawLine(Eigen::Vector3f begin,Eigen::Vector3f end);
+    void drawLine(Vector3f begin,Vector3f end);
+    void drawTriangle(const Triangle &);
+
 };
 
 
