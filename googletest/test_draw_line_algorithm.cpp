@@ -4,8 +4,8 @@
 
 #include "gtest/gtest.h"
 
-#include "rasterizer.cpp"
-using namespace lineAlgorithm;
+#include "drawing_methods.hpp"
+using namespace line_drawing;
 
 class LineAlgorithmFixture : public ::testing::Test{
  protected:
@@ -25,5 +25,5 @@ TEST_F(LineAlgorithmFixture, DDA_line) {
 }
 
 TEST_F(LineAlgorithmFixture, simple_bresenham_line) {
-    drawLine_Bresenham_simple(x1,y1,x2,y2,r);
+    drawLine_MidpointLineAlgorithm(x1, y1, x2, y2, r);
 }
