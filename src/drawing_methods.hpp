@@ -9,9 +9,9 @@
 
 #include "rasterizer.hpp"
 
-namespace lineAlgorithm {
+namespace line_drawing {
 void drawLine_DigitalDifferentialAnalyzer(int x1, int y1, int x2, int y2, Rasterizer &r);
-void drawLine_Bresenham_simple(int x1, int y1, int x2, int y2, Rasterizer &r);
+void drawLine_MidpointLineAlgorithm(int x1, int y1, int x2, int y2, Rasterizer &r);
 void drawLine_Bresenham(int x1, int y1, int x2, int y2, Rasterizer &r);
 }
 

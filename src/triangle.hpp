@@ -18,6 +18,8 @@ public:
     array<Vector3f ,3> vertex_;
     array<Vector3f ,3> color_;
 
+    void setVertex(int idx, const Vector3f &v) {vertex_[idx] = v;}
+    void setColor(int idx, const Vector3f &color) {color_[idx] = color;}
 };
 
 #endif //RASTERIZER_TRIANGLE_HPP

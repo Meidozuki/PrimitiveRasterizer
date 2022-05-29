@@ -6,7 +6,7 @@
 
 using std::swap;
 
-namespace lineAlgorithm {
+namespace line_drawing {
 void drawLine_DigitalDifferentialAnalyzer(int x1, int y1, int x2, int y2, Rasterizer &r) {
     int dx = x2 - x1, dy = y2 - y1;
     ColorType color{1.0f, 1.0f, 1.0f};
@@ -22,26 +22,42 @@ void drawLine_DigitalDifferentialAnalyzer(int x1, int y1, int x2, int y2, Raster
     }
 }
 
-void drawLine_Bresenham_simple(int x1, int y1, int x2, int y2, Rasterizer &r) {
+void drawLine_MidpointLineAlgorithm(int x1, int y1, int x2, int y2, Rasterizer &r) {
     //浮点计算累积误差问题
-    int dx = x2 - x1, dy = y2 - y1;
+
+    //斜率过高时对换x y
+    bool steep = std::abs(y2 - y1) > std::abs(x2 - x1);
+    if (steep) { // x和y直接分支
+        swap(x1, y1);
+        swap(x2, y2);
+    }
+
+    //统一不同象限增长
+    int8_t x_inc = x1 <= x2 ? 1 : -1;
+    int8_t y_inc = y1 <= y2 ? 1 : -1;
+
+    int dx = std::abs(x2 - x1), dy = std::abs(y2 - y1);
     DType accum = 0, slope = 1.0f * dy / dx;
     ColorType color{1.0f, 1.0f, 1.0f};
 
     int x = x1, y = y1;
-    for (int i = x; i < x2; ++i) {
-        x++;
+    for (; x != x2; x += x_inc) {
         accum += slope;
         if (accum > 0.5) {
-            y++;
+            y += y_inc;
             accum-=1;
         }
-        r.setPixel(x, y, color);
+
+        if (steep)
+            r.setPixel(y, x, color);
+        else
+            r.setPixel(x, y, color);
     }
 }
 
 void drawLine_Bresenham(int x1, int y1, int x2, int y2, Rasterizer &r) {
     //多分支绘制直线算法
+    //编译器-O0和-O1下不同写法的浮点方法和该方法，在单线程下性能并无显著差异
     //斜率过高时对换x y
     bool steep = std::abs(y2 - y1) > std::abs(x2 - x1);
     if (steep) { // x和y直接分支
