@@ -16,4 +16,5 @@ function(add_gtest_exe exe src)
     target_link_libraries(${exe} Raster_src_lib)
 endfunction()
 
-add_gtest_exe(gtest_time time_comparation.cpp )
+#add_gtest_exe(gtest_time time_comparation.cpp )
+add_gtest_exe(gtest_time time_comparation_2.cpp )
