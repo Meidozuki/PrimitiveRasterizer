@@ -6,9 +6,10 @@
 #define MAIN_CPP_RASTERIZER_HPP
 
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include <tuple>
-#include <sstream>
+#include <map>
 
 #include <Eigen/Core>
 #include "unsupported/Eigen/CXX11/Tensor"
@@ -27,9 +28,23 @@ using Eigen::Vector3f;
 using std::stringstream;
 
 class Rasterizer {
+public:
+    enum class drawing_mode {Wireframe, Triangle};
+
+    typedef int PositionIndex;
+    typedef int IndicesIndex;
+    typedef int ColorIndex;
+
+    typedef float ZBufferType;
+
 private:
     int width_, height_;
     Tensor<DType, 3> frame_buffer_; // 3-dim tensor
+    Eigen::Matrix<ZBufferType, Dynamic, Dynamic> z_buffer_;
+
+    std::map<PositionIndex, std::vector<Vector3f> > pos_buf;
+    std::map<IndicesIndex , std::vector<Vector3f> > idx_buf;
+    std::map<ColorIndex   , std::vector<Vector3f> > color_buf;
 
 public:
     Rasterizer(int h,int w): width_(w),height_(h) {
