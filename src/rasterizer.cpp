@@ -9,10 +9,35 @@
 
 #include "drawing_methods.hpp"
 
+typedef const Eigen::Vector3f& Vector3fCRef;
+typedef std::tuple<float, float, float, float> Tuple4Df;
+
 using namespace line_drawing;
 void Rasterizer::drawLine(Vector3f begin,Vector3f end) {
     drawLine_Bresenham(begin.x(),begin.y(),end.x(),end.y(),*this);
 
+}
+
+Tuple4Df computeBarycentric2D(Vector3fCRef P, Vector3fCRef A, Vector3fCRef B, Vector3fCRef C) {
+    //忽略z轴
+    //求解alpha * AB + beta * AC = AP
+    //用Cramer法则求解，可以转化为叉乘
+
+    //此处实际只要Vector2f，但用Vector3f避免转化
+    Eigen::Vector3f &&AP = P - A;
+    Eigen::Vector3f &&AB = B - A;
+    Eigen::Vector3f &&AC = C - A;
+
+    Eigen::Vector3f X (AB.x(), AP.x(), AC.x());
+    Eigen::Vector3f Y (AB.y(), AP.y(), AC.y());
+    //这个形式的叉乘刚好返回(alpha, -Det, beta)
+    Eigen::Vector3f && cross=X.cross(Y);
+
+    return {cross.x(), cross.z(), 1-cross.x()-cross.z(), -cross.y()};
+}
+
+inline auto computeBarycentric2D(const Vector3f &P, const array<Vector3f ,3> &vertex) {
+    return computeBarycentric2D(P, vertex[0], vertex[1], vertex[2]);
 }
 
 bool insideTriangle(int x, int y, const std::array<Vector3f, 3> &vertices) {
@@ -55,6 +80,9 @@ void Rasterizer::drawTriangle(const Triangle &tri) {
             if (!insideTriangle(i,j,tri.vertex_)) {
                 continue;
             }
+
+            Vector3f P(static_cast<float>(i), static_cast<float>(j), 0.0f);
+            auto [alpha, beta, gamma, det] = computeBarycentric2D(P, tri.vertex_);
 
             int depth=99,z=1;
             if (z > depth) continue;
