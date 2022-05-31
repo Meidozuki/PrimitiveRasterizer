@@ -27,9 +27,21 @@ using Eigen::Dynamic;
 using Eigen::Vector3f;
 using std::stringstream;
 
+struct Buffers {
+    enum Buffer{
+        Color = 1,
+        Depth = 2,
+    };
+
+    int buffer;
+    explicit Buffers(Buffer buf):buffer(buf) {}
+    Buffers(int buf):buffer(buf) {}
+    operator int() const {return static_cast<int>(buffer);}
+};
+
 class Rasterizer {
 public:
-    enum class drawing_mode {Wireframe, Triangle};
+    enum class DrawingMode {Wireframe, Triangle};
 
     typedef int PositionIndex;
     typedef int IndicesIndex;
@@ -49,6 +61,7 @@ private:
 public:
     Rasterizer(int h,int w): width_(w),height_(h) {
         frame_buffer_.resize({height_, width_, 3});
+        z_buffer_.resize(height_, width_);
     }
     Rasterizer(): Rasterizer(0,0) {};
 
@@ -60,7 +73,10 @@ public:
         return {frame_buffer_.dimension(0),frame_buffer_.dimension(1)};
     }
 
+    //setters
+    void clearBuffer(Buffers );
     inline void setPixel(int x,int y,const ColorType& color);
+    inline void setDepth(int x,int y,ZBufferType z);
 
     void drawLine(Vector3f begin,Vector3f end);
     void drawTriangle(const Triangle &);
@@ -89,5 +105,23 @@ inline void Rasterizer::setPixel(int x,int y,const ColorType& color) {
     frame_buffer_(x, y, 2) = color[2];
 }
 
+inline void Rasterizer::setDepth(int x, int y, ZBufferType z) {
+#if DEBUG_MODE
+    if (x < 0 || x > width_ ||
+        y < 0 || y > height_)
+    {
+        stringstream err_info;
+        if (x < 0 || x > width_) {
+            err_info << "setDepth: x out of range, x = " << x;
+        }
+        else {
+            err_info << "setDepth: y out of range, y = " << y;
+        }
+        throw std::out_of_range(err_info.str());
+    }
+#endif
+
+    z_buffer_(x,y) = z;
+}
 
 #endif //MAIN_CPP_RASTERIZER_HPP
