@@ -10,7 +10,7 @@
 #include "drawing_methods.hpp"
 
 typedef const Eigen::Vector3f& Vector3fCRef;
-typedef std::tuple<float, float, float, float> Tuple4Df;
+typedef std::tuple<float, float, float> Tuple3Df;
 
 using namespace line_drawing;
 void Rasterizer::drawLine(Vector3f begin,Vector3f end) {
@@ -18,7 +18,7 @@ void Rasterizer::drawLine(Vector3f begin,Vector3f end) {
 
 }
 
-Tuple4Df computeBarycentric2D(Vector3fCRef P, Vector3fCRef A, Vector3fCRef B, Vector3fCRef C) {
+Tuple3Df computeBarycentric2D(Vector3fCRef P, Vector3fCRef A, Vector3fCRef B, Vector3fCRef C) {
     //忽略z轴
     //求解alpha * AB + beta * AC = AP
     //用Cramer法则求解，可以转化为叉乘
@@ -33,11 +33,15 @@ Tuple4Df computeBarycentric2D(Vector3fCRef P, Vector3fCRef A, Vector3fCRef B, Ve
     //这个形式的叉乘刚好返回(alpha, -Det, beta)
     Eigen::Vector3f && cross=X.cross(Y);
 
-    return {cross.x(), cross.z(), 1-cross.x()-cross.z(), -cross.y()};
+    return {cross.x(), cross.z(), -cross.y()};
 }
 
 inline auto computeBarycentric2D(const Vector3f &P, const array<Vector3f ,3> &vertex) {
     return computeBarycentric2D(P, vertex[0], vertex[1], vertex[2]);
+}
+
+inline bool insideTriangle_Barycentric(float a,float b,float c) {
+    return a >= 0 && a <= 1 && b >= 0 && b <= 1 && c >= 0 && c <= 1;
 }
 
 bool insideTriangle(int x, int y, const std::array<Vector3f, 3> &vertices) {
@@ -81,8 +85,16 @@ void Rasterizer::drawTriangle(const Triangle &tri) {
                 continue;
             }
 
-            Vector3f P(static_cast<float>(i), static_cast<float>(j), 0.0f);
-            auto [alpha, beta, gamma, det] = computeBarycentric2D(P, tri.vertex_);
+//            auto [alpha, beta, det] = computeBarycentric2D(Vector3f(i,j,0.0), tri.vertex_);
+//            if (det == 0) {
+//                std::cerr << "drawing a line-shape triangle.\n";
+//                return;
+//            }
+//            alpha /= det, beta /= det;
+//            float gamma = 1-alpha-beta;
+//            if (!insideTriangle_Barycentric(alpha,beta,gamma)) {
+//                continue;
+//            }
 
             int depth=99,z=1;
             if (z > depth) continue;
