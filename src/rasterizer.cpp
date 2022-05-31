@@ -65,7 +65,6 @@ bool insideTriangle(int x, int y, const std::array<Vector3f, 3> &vertices) {
 
 void Rasterizer::drawTriangle(const Triangle &tri) {
     //TODO: 处理edge
-    ColorType color{1,1,1};
     Eigen::Matrix3f vertex_data;
     vertex_data << tri.vertex_[0], tri.vertex_[1], tri.vertex_[2];
 
@@ -81,23 +80,33 @@ void Rasterizer::drawTriangle(const Triangle &tri) {
 
     for (int i = infX;i < supX;++i) {
         for (int j = infY;j < supY;++j) {
-            if (!insideTriangle(i,j,tri.vertex_)) {
+            //若使用C++17结构化绑定，clang会在下面的lambda表达式报错，因此用C++11版本
+            float alpha, beta, gamma, det;
+            std::tie(alpha, beta, det) = computeBarycentric2D(Vector3f(i,j,0.0), tri.vertex_);
+            if (det == 0) {
+                std::cerr << "drawing a line-shape triangle.\n";
+                return;
+            }
+            alpha /= det, beta /= det;
+            gamma = 1 - alpha - beta;
+            if (!insideTriangle_Barycentric(alpha,beta,gamma)) {
                 continue;
             }
 
-//            auto [alpha, beta, det] = computeBarycentric2D(Vector3f(i,j,0.0), tri.vertex_);
-//            if (det == 0) {
-//                std::cerr << "drawing a line-shape triangle.\n";
-//                return;
-//            }
-//            alpha /= det, beta /= det;
-//            float gamma = 1-alpha-beta;
-//            if (!insideTriangle_Barycentric(alpha,beta,gamma)) {
-//                continue;
-//            }
+            auto interpolate = [alpha, beta, gamma] (DType a, DType b, DType c) {
+              return alpha * a + beta * b + gamma * c;
+            };
+            auto interpolateVec3f = [alpha, beta, gamma] (Vector3fCRef a, Vector3fCRef b, Vector3fCRef c) {
+              return alpha * a + beta * b + gamma * c;
+            };
 
-            int depth=99,z=1;
+            Vector3f c=tri.getColor(0);
+
+            int depth=99;
+            float z = interpolate(vertex_data(2,0), vertex_data(2,1), vertex_data(2,2));
             if (z > depth) continue;
+
+            ColorType color = interpolateVec3f(tri.getColor(0),tri.getColor(1),tri.getColor(2));
 
             setPixel(i,j,color);
         }

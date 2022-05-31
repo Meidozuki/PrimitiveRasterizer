@@ -25,7 +25,7 @@ class TimeCompareFixture : public ::testing::Test{
     Rasterizer r;
 
     virtual void SetUp () {
-        n_repeat=2000;
+        n_repeat=3000;
         e=default_random_engine(clock());
         u=uniform_int_distribution<int> (100,700);
         r=Rasterizer(1200,900);
@@ -61,7 +61,7 @@ void drawTriangle(Rasterizer &r,const Triangle &tri,bool mode) {
             }
             else {
                 auto [alpha, beta, det] = computeBarycentric2D(Vector3f(i,j,0.0), tri.vertex_);
-                if (det == 0) {
+                if (std::abs(det) < 1e-5) {
                     std::cerr << "drawing a line-shape triangle.\n";
                     return;
                 }
