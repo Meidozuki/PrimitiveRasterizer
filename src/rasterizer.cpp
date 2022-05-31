@@ -5,6 +5,7 @@
 #include "rasterizer.hpp"
 
 #include <cmath>
+#include <climits>
 #include <array>
 
 #include "drawing_methods.hpp"
@@ -93,6 +94,7 @@ void Rasterizer::drawTriangle(const Triangle &tri) {
                 continue;
             }
 
+            //TODO:看看能不能用模板
             auto interpolate = [alpha, beta, gamma] (DType a, DType b, DType c) {
               return alpha * a + beta * b + gamma * c;
             };
@@ -100,15 +102,26 @@ void Rasterizer::drawTriangle(const Triangle &tri) {
               return alpha * a + beta * b + gamma * c;
             };
 
-            Vector3f c=tri.getColor(0);
 
-            int depth=99;
+            ZBufferType cur_depth = z_buffer_(i,j);
             float z = interpolate(vertex_data(2,0), vertex_data(2,1), vertex_data(2,2));
-            if (z > depth) continue;
+            if (z > cur_depth) continue;
+
+            setDepth(i,j,z);
 
             ColorType color = interpolateVec3f(tri.getColor(0),tri.getColor(1),tri.getColor(2));
-
             setPixel(i,j,color);
         }
+    }
+}
+
+void Rasterizer::clearBuffer(Buffers buffer_instruct) {
+    //为了方便只能用Implcit，是否会有其他问题？
+    int buf=buffer_instruct;
+    if ((buf & Buffers::Color) == Buffers::Color) {
+        frame_buffer_.setConstant(0);
+    }
+    if ((buf & Buffers::Depth) == Buffers::Depth) {
+        z_buffer_.setConstant(std::numeric_limits<ZBufferType>::infinity());
     }
 }

@@ -18,18 +18,22 @@ int main() {
 
     const int height=300,width=400;
     Rasterizer raster(height,width);
+    raster.clearBuffer(Buffers::Color | Buffers::Depth);
 
     Triangle triangle;
     triangle.setVertex(0,{50,50,0});
     triangle.setVertex(1,{50,100,0});
     triangle.setVertex(2,{100,50,0});
+    triangle.setColor(0,{1,0,0});
+    triangle.setColor(1,{0,1,0});
+    triangle.setColor(2,{0,0,1});
     raster.drawTriangle(triangle);
 
     raster.drawLine({100,100,0},{200,250,0});
 
     cv::Mat image(height,width,CV_32FC3);
     cv::eigen2cv(raster.framebuffer(),image);
-    cv::cvtColor(image,image,cv::COLOR_RGB2GRAY);
+//    cv::cvtColor(image,image,cv::COLOR_RGB2GRAY);
     cv::imshow("image",image);
 
     cv::waitKey();
