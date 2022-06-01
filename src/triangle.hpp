@@ -6,11 +6,16 @@
 #define RASTERIZER_TRIANGLE_HPP
 
 #include <array>
+#include <memory>
 
 #include <Eigen/Eigen>
 
 using std::array;
+using std::shared_ptr;
 using Eigen::Vector3f;
+
+class Triangle;
+typedef shared_ptr<Triangle> TrianglePtr;
 
 class Triangle {
 
@@ -29,6 +34,11 @@ public:
     }
 
     Vector3f getColor(int idx) const {return color_[idx];}
+
+    friend TrianglePtr createTriangle() {
+        TrianglePtr ptr = std::make_shared<Triangle>();
+        return ptr;
+    }
 };
 
 
