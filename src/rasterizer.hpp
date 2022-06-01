@@ -17,7 +17,7 @@
 #include "triangle.hpp"
 
 #ifndef DEBUG_MODE
-  #define DEBUG_MODE 1
+  #define DEBUG_MODE 2
 #endif
 
 typedef float DType;
@@ -53,16 +53,11 @@ private:
     int width_, height_;
     Tensor<DType, 3> frame_buffer_; // 3-dim tensor
     Eigen::Matrix<ZBufferType, Dynamic, Dynamic> z_buffer_;
+    Eigen::Matrix4f model_, view_, projection_;
 
-    std::map<PositionIndex, std::vector<Vector3f> > pos_buf;
-    std::map<IndicesIndex , std::vector<Vector3f> > idx_buf;
-    std::map<ColorIndex   , std::vector<Vector3f> > color_buf;
 
 public:
-    Rasterizer(int h,int w): width_(w),height_(h) {
-        frame_buffer_.resize({height_, width_, 3});
-        z_buffer_.resize(height_, width_);
-    }
+    Rasterizer(int h,int w);
     Rasterizer(): Rasterizer(0,0) {};
 
     //getters
@@ -75,11 +70,15 @@ public:
 
     //setters
     void clearBuffer(Buffers );
+    void setModel(const Eigen::Matrix4f &model)         {model_ = model;}
+    void setView(const Eigen::Matrix4f &view)           {view_ = view;}
+    void setProjection(const Eigen::Matrix4f &project)  {projection_ = project;}
     inline void setPixel(int x,int y,const ColorType& color);
     inline void setDepth(int x,int y,ZBufferType z);
 
+    void draw(const std::vector<Triangle> &triangles);
     void drawLine(Vector3f begin,Vector3f end);
-    void drawTriangle(const Triangle &);
+    void drawTriangle(const Triangle &tri);
 
 };
 

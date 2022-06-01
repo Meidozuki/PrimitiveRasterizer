@@ -9,9 +9,29 @@
 #include <array>
 
 #include "drawing_methods.hpp"
+#include "utils.hpp"
 
 typedef const Eigen::Vector3f& Vector3fCRef;
 typedef std::tuple<float, float, float> Tuple3Df;
+
+struct InterpolateFn {
+    float alpha, beta, gamma;
+    InterpolateFn(float a, float b, float c): alpha(a), beta(b), gamma(c) {}
+    InterpolateFn(): InterpolateFn(0,0,0) {}
+
+    template<typename T>
+    inline T operator() (T a, T b, T c) {
+        return alpha * a + beta * b + gamma * c;
+    }
+};
+
+Rasterizer::Rasterizer(int h, int w): width_(w),height_(h) {
+    frame_buffer_.resize({height_, width_, 3});
+    z_buffer_.resize(height_, width_);
+    clearBuffer(Buffers::Depth | Buffers::Color);
+
+    model_ = view_ = projection_ = Eigen::Matrix4f::Identity();
+}
 
 using namespace line_drawing;
 void Rasterizer::drawLine(Vector3f begin,Vector3f end) {
@@ -64,20 +84,20 @@ bool insideTriangle(int x, int y, const std::array<Vector3f, 3> &vertices) {
     return (z1 > 0 && z2 > 0 && z3 > 0) || (z1 < 0 && z2 < 0 && z3 < 0);
 }
 
+
 void Rasterizer::drawTriangle(const Triangle &tri) {
     //TODO: 处理edge
     Eigen::Matrix3f vertex_data;
     vertex_data << tri.vertex_[0], tri.vertex_[1], tri.vertex_[2];
 
-#if DEBUG_MODE
-    std::clog << "drawTriangle received:\n" << vertex_data << std::endl;
-#endif
-
     Vector3f &&min_v = vertex_data.rowwise().minCoeff();
     int infX = std::floor(min_v.x()), infY = std::floor(min_v.y());
     Vector3f &&max_v = vertex_data.rowwise().maxCoeff();
     int supX = std::floor(max_v.x()), supY = std::floor(max_v.y());
-//    std::cout << infX << ' ' << infY << ' ' << supX << ' ' << supY << std::endl;
+#if DEBUG_MODE > 1
+    std::clog << "drawTriangle received:\n" << vertex_data << std::endl;
+    std::clog << "boundings: " << infX << ' ' << infY << ' ' << supX << ' ' << supY << std::endl;
+#endif
 
     for (int i = infX;i < supX;++i) {
         for (int j = infY;j < supY;++j) {
@@ -94,25 +114,64 @@ void Rasterizer::drawTriangle(const Triangle &tri) {
                 continue;
             }
 
-            //TODO:看看能不能用模板
-            auto interpolate = [alpha, beta, gamma] (DType a, DType b, DType c) {
-              return alpha * a + beta * b + gamma * c;
-            };
-            auto interpolateVec3f = [alpha, beta, gamma] (Vector3fCRef a, Vector3fCRef b, Vector3fCRef c) {
-              return alpha * a + beta * b + gamma * c;
-            };
+            InterpolateFn interpolate(alpha,beta,gamma);
 
 
             ZBufferType cur_depth = z_buffer_(i,j);
             float z = interpolate(vertex_data(2,0), vertex_data(2,1), vertex_data(2,2));
-            if (z > cur_depth) continue;
+            if (z > cur_depth)
+                continue;
 
             setDepth(i,j,z);
 
-            ColorType color = interpolateVec3f(tri.getColor(0),tri.getColor(1),tri.getColor(2));
+            ColorType color = interpolate(tri.getColor(0),tri.getColor(1),tri.getColor(2));
             setPixel(i,j,color);
         }
     }
+
+}
+
+void Rasterizer::draw(const std::vector<Triangle> &triangles) {
+
+    float f1 = (50 - 0.1) / 2.0;
+    float f2 = (50 + 0.1) / 2.0;
+
+
+    Eigen::Matrix4f mv  = view_ * model_;
+    Eigen::Matrix4f mvp = projection_ * view_ * model_;
+    std::cout << mvp << std::endl;
+
+    for (const auto& tri : triangles) {
+        //之后换成指针
+        Triangle new_tri = tri;
+
+        std::array<Eigen::Vector4f, 3> vertex;
+        for (int i=0;i < 3;++i) {
+            vertex[i] = Vector3to4(tri.vertex_[i]);
+        }
+
+        std::array<Vector3f, 3> viewspace_pos;
+        for (int i=0;i < 3;++i) {
+            viewspace_pos[i] = (mv * vertex[i]).head(3);
+        }
+        std::cout << tri.vertex_[0] << std::endl;
+        std::cout << viewspace_pos[0] << std::endl;
+
+        for (int i=0;i < 3;++i) {
+            Eigen::Vector4f new_vertex = mvp * vertex[i];
+            new_vertex/=new_vertex.w();
+            new_vertex.x() = 0.5 * width_ * (1.0f + new_vertex.x());
+            new_vertex.y() = 0.5 * height_ * (1.0f + new_vertex.y());
+            new_vertex.z() = new_vertex.z() * f1 + f2;
+
+            new_tri.vertex_[i] = new_vertex.head(3);
+        }
+
+        //TODO: 设置normal
+
+        drawTriangle(new_tri);
+    }
+
 }
 
 void Rasterizer::clearBuffer(Buffers buffer_instruct) {
