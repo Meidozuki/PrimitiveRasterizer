@@ -5,6 +5,8 @@
 #ifndef MAIN_CPP_SRC_UTILS_HPP_
 #define MAIN_CPP_SRC_UTILS_HPP_
 
+#include <stdexcept>
+
 #include <Eigen/Core>
 
 inline Eigen::Vector4f Vector3to4(const Eigen::Vector3f &v, float w = 1.0f) {

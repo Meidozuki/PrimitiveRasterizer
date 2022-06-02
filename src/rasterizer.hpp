@@ -17,7 +17,7 @@
 #include "triangle.hpp"
 
 #ifndef DEBUG_MODE
-  #define DEBUG_MODE 2
+  #define DEBUG_MODE 1
 #endif
 
 typedef float DType;
@@ -64,6 +64,7 @@ public:
     const int width() const {return width_;}
     const int height() const {return height_;}
     const auto & framebuffer() {return frame_buffer_;}
+    const float getZBuffer(int x,int y) {return z_buffer_(y,x);}
     std::tuple<int, int> get_framebuffer_shape() {
         return {frame_buffer_.dimension(0),frame_buffer_.dimension(1)};
     }
@@ -99,9 +100,9 @@ inline void Rasterizer::setPixel(int x,int y,const ColorType& color) {
     }
 #endif
 
-    frame_buffer_(x, y, 0) = color[0];
-    frame_buffer_(x, y, 1) = color[1];
-    frame_buffer_(x, y, 2) = color[2];
+    frame_buffer_(y, x, 0) = color[0];
+    frame_buffer_(y, x, 1) = color[1];
+    frame_buffer_(y, x, 2) = color[2];
 }
 
 inline void Rasterizer::setDepth(int x, int y, ZBufferType z) {
@@ -120,7 +121,7 @@ inline void Rasterizer::setDepth(int x, int y, ZBufferType z) {
     }
 #endif
 
-    z_buffer_(x,y) = z;
+    z_buffer_(y, x) = z;
 }
 
 #endif //MAIN_CPP_RASTERIZER_HPP
