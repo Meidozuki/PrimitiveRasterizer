@@ -15,13 +15,14 @@ typedef const Eigen::Vector3f& Vector3fCRef;
 typedef std::tuple<float, float, float> Tuple3Df;
 
 struct InterpolateFn {
+    //alpha -> AB, beta -> AC
     float alpha, beta, gamma;
     InterpolateFn(float a, float b, float c): alpha(a), beta(b), gamma(c) {}
     InterpolateFn(): InterpolateFn(0,0,0) {}
 
     template<typename T>
     inline T operator() (T a, T b, T c) {
-        return alpha * a + beta * b + gamma * c;
+        return alpha * b + beta * c + gamma * a;
     }
 };
 
@@ -99,33 +100,38 @@ void Rasterizer::drawTriangle(const Triangle &tri) {
     std::clog << "boundings: " << infX << ' ' << infY << ' ' << supX << ' ' << supY << std::endl;
 #endif
 
-    for (int i = infX;i < supX;++i) {
-        for (int j = infY;j < supY;++j) {
+    for (int x = infX;x < supX;++x) {
+        for (int y = infY;y < supY;++y) {
             //若使用C++17结构化绑定，clang会在下面的lambda表达式报错，因此用C++11版本
+            if (!insideTriangle(x,y,tri.vertex_)) {
+                continue;
+            }
+
+
             float alpha, beta, gamma, det;
-            std::tie(alpha, beta, det) = computeBarycentric2D(Vector3f(i,j,0.0), tri.vertex_);
+            std::tie(alpha, beta, det) = computeBarycentric2D(Vector3f(x,y,0.0), tri.vertex_);
             if (det == 0) {
                 std::cerr << "drawing a line-shape triangle.\n";
                 return;
             }
             alpha /= det, beta /= det;
             gamma = 1 - alpha - beta;
-            if (!insideTriangle_Barycentric(alpha,beta,gamma)) {
-                continue;
-            }
+//            if (!insideTriangle_Barycentric(alpha,beta,gamma)) {
+//                continue;
+//            }
 
             InterpolateFn interpolate(alpha,beta,gamma);
 
 
-            ZBufferType cur_depth = z_buffer_(i,j);
+            ZBufferType cur_depth = getZBuffer(x,y);
             float z = interpolate(vertex_data(2,0), vertex_data(2,1), vertex_data(2,2));
             if (z > cur_depth)
                 continue;
 
-            setDepth(i,j,z);
+            setDepth(x,y,z);
 
             ColorType color = interpolate(tri.getColor(0),tri.getColor(1),tri.getColor(2));
-            setPixel(i,j,color);
+            setPixel(x,y,color);
         }
     }
 
@@ -154,12 +160,13 @@ void Rasterizer::draw(const std::vector<Triangle> &triangles) {
         for (int i=0;i < 3;++i) {
             viewspace_pos[i] = (mv * vertex[i]).head(3);
         }
-        std::cout << tri.vertex_[0] << std::endl;
-        std::cout << viewspace_pos[0] << std::endl;
+//        std::cout << tri.vertex_[0] << std::endl;
+//        std::cout << viewspace_pos[0] << std::endl;
 
         for (int i=0;i < 3;++i) {
             Eigen::Vector4f new_vertex = mvp * vertex[i];
             new_vertex/=new_vertex.w();
+//            std::cout << "point " << new_vertex << std::endl;
             new_vertex.x() = 0.5 * width_ * (1.0f + new_vertex.x());
             new_vertex.y() = 0.5 * height_ * (1.0f + new_vertex.y());
             new_vertex.z() = new_vertex.z() * f1 + f2;
