@@ -18,7 +18,7 @@ include_directories(3Party/opencv/include)
 
 include_directories(src)
 file(GLOB SRC_CPP
-        src/*.cpp)
+        src/*.cpp src/voxel/*.cpp)
 list(APPEND SRC_CPP
         main.cpp)
 add_executable(Rasterizer ${SRC_CPP})
@@ -57,6 +57,5 @@ endif()
 unset(DLLS_num)
 unset(DLLS_)
 
-
 add_subdirectory(src)
-#add_subdirectory(googletest)
+add_subdirectory(googletest)
