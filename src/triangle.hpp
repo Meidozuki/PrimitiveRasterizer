@@ -7,6 +7,7 @@
 
 #include <array>
 #include <memory>
+#include <cassert>
 
 #include <Eigen/Eigen>
 
@@ -26,7 +27,12 @@ public:
     Triangle();
 
     void setVertex(int idx, const Vector3f &v) {vertex_[idx] = v;}
-    void setColor(int idx, const Vector3f &color) {color_[idx] = color;}
+    void setColor(int idx, const Vector3f &color) {
+        assert(color[0] >= 0 && color[0] <= 1 && \
+            color[1] >= 0 && color[1] <= 1 && \
+            color[2] >= 0 && color[2] <= 1 );
+        color_[idx] = color;
+    }
     void setAllColors(const Vector3f &color) {
         setColor(0,color);
         setColor(1,color);

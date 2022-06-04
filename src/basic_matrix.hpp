@@ -6,10 +6,35 @@
 #define RASTERIZER_BASIC_MATRIX_HPP
 
 #include <cmath>
+
 #include <Eigen/Core>
+
+#include "utils.hpp"
 constexpr double PI = 3.1415926;
 
-Eigen::Matrix4f get_view_matrix(Eigen::Vector3f eye_pos)
+static inline const Eigen::Vector3f getDefaultCameraLookat() {
+    Eigen::Vector3f v(0,0,-1);
+    return std::move(v);
+}
+static inline const Eigen::Vector3f getDefaultCameraUpDirection() {
+    Eigen::Vector3f v(0,1,0);
+    return std::move(v);
+}
+static inline Eigen::Matrix4f getViewRotate(Eigen::Vector3f lookat, Eigen::Vector3f up) {
+    // newX->x, up->y, lookat->-z
+    Eigen::Vector3f &&newX = lookat.cross(up);
+    Eigen::Vector4f padding(0,0,0,1);
+    Eigen::Matrix4f rotate;
+    rotate << Vector3to4(newX,0),\
+        Vector3to4(up,0),\
+        Vector3to4(-lookat,0),\
+        padding;
+
+    rotate.transposeInPlace();
+    return std::move(rotate);
+}
+
+Eigen::Matrix4f getViewMatrix(Eigen::Vector3f eye_pos)
 {
     Eigen::Matrix4f view = Eigen::Matrix4f::Identity();
 
@@ -19,12 +44,14 @@ Eigen::Matrix4f get_view_matrix(Eigen::Vector3f eye_pos)
                 0, 0, 1, -eye_pos[2],
                 0, 0, 0, 1;
 
-    view = translate * view;
+    Eigen::Matrix4f rotate = getViewRotate(getDefaultCameraLookat(), getDefaultCameraUpDirection());
+    std::cout << "rotate\n" << rotate << std::endl;
+    view = translate * view * rotate;
 
     return view;
 }
 
-Eigen::Matrix4f get_model_matrix(float rotation_angle)
+Eigen::Matrix4f getModelMatrix(float rotation_angle)
 {
     Eigen::Matrix4f model = Eigen::Matrix4f::Identity();
 
@@ -43,33 +70,36 @@ Eigen::Matrix4f get_model_matrix(float rotation_angle)
     return model;
 }
 
-Eigen::Matrix4f get_projection_matrix(float fov_Y, float aspect_ratio,
-                                      float zNear, float zFar)
+Eigen::Matrix4f GetProjectionMatrix(float fov_Y, float aspect_ratio,
+                                    float zNear, float zFar)
 {
+    if (zNear < 0 || zFar < 0) {
+        throw std::out_of_range("zNear and zFar must be positive");
+    }
+
     Eigen::Matrix4f projection = Eigen::Matrix4f::Identity();
 
-    // Create the projection matrix for the given parameters.
-    // Then return it.
-    float arg_top = zNear * std::tan(fov_Y / 2);
-    float arg_right = aspect_ratio * arg_top;
+    float theta = fov_Y / 2 / 180 * PI;
+    float y_range = zNear * std::tan(theta); //avoid duplicate /2 *2
+    float x_range = aspect_ratio * y_range;
+    float z_range = (zFar - zNear) / 2;
 
+    //由于世界坐标是右手系，相机坐标是左手系
+    //经过view变换后可视物体的z坐标均为负
     Eigen::Matrix4f perspective;
     perspective << zNear, 0, 0, 0,
                     0, zNear, 0, 0,
-                    0, 0, zNear + zFar, -zNear * zFar,
-                    0, 0, 1, 0;
+                    0, 0, -(zNear + zFar), -zNear * zFar,
+                    0, 0, -1, 0;
 
     // right+left == top+bottom == 0
-    Eigen::Matrix4f translate;
-    translate << 1, 0, 0, 0,
-                0, 1, 0, 0,
-                0, 0, 1, -(zNear + zFar) / 2,
-                0, 0, 0, 1;
+    Eigen::Matrix4f ortho;
+    ortho << 1 / x_range, 0, 0, 0,
+            0, 1 / y_range, 0, 0,
+            0, 0, 1 / z_range , -(zFar + zNear) / (zFar - zNear),
+            0, 0, 0, 1;
 
-    Eigen::DiagonalMatrix<float, 4> scale;
-    scale.diagonal() << (1 / arg_top), (1 / arg_right), (2 / (zFar - zNear)), 1;
-
-    projection = scale * translate * perspective;
+    projection = ortho * perspective;
 
     return projection;
 }
