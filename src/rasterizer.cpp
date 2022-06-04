@@ -34,6 +34,17 @@ Rasterizer::Rasterizer(int h, int w): width_(w),height_(h) {
     model_ = view_ = projection_ = Eigen::Matrix4f::Identity();
 }
 
+void Rasterizer::clearBuffer(Buffers buffer_instruct) {
+    //为了方便只能用Implicit，是否会有其他问题？
+    int buf=buffer_instruct;
+    if ((buf & Buffers::Color) == Buffers::Color) {
+        frame_buffer_.setConstant(0);
+    }
+    if ((buf & Buffers::Depth) == Buffers::Depth) {
+        z_buffer_.setConstant(std::numeric_limits<ZBufferType>::infinity());
+    }
+}
+
 using namespace line_drawing;
 void Rasterizer::drawLine(Vector3f begin,Vector3f end) {
     drawLine_Bresenham(begin.x(),begin.y(),end.x(),end.y(),*this);
@@ -179,15 +190,4 @@ void Rasterizer::draw(const std::vector<Triangle> &triangles) {
         drawTriangle(new_tri);
     }
 
-}
-
-void Rasterizer::clearBuffer(Buffers buffer_instruct) {
-    //为了方便只能用Implcit，是否会有其他问题？
-    int buf=buffer_instruct;
-    if ((buf & Buffers::Color) == Buffers::Color) {
-        frame_buffer_.setConstant(0);
-    }
-    if ((buf & Buffers::Depth) == Buffers::Depth) {
-        z_buffer_.setConstant(std::numeric_limits<ZBufferType>::infinity());
-    }
 }
