@@ -9,7 +9,7 @@
 #include <random>
 
 #include "gtest/gtest.h"
-#include "rasterizer.cpp"
+#include "rasterizer.hpp"
 
 #define DEBUG_MODE 1
 
