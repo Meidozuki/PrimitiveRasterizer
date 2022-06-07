@@ -6,7 +6,7 @@
 
 namespace voxel {
 //static member
-Vector3f Mesh2D::mesh_color = Vector3f(1,1,1);
+ColorType Mesh2D::mesh_color = Vector3f(1,1,1);
 
 void Mesh2D::getTriangles(std::vector<Triangle> &tri_list) {
     int len = indices_.size();
