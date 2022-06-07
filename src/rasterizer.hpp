@@ -14,6 +14,7 @@
 #include <Eigen/Core>
 #include "unsupported/Eigen/CXX11/Tensor"
 
+#include "utils.hpp"
 #include "triangle.hpp"
 
 #ifndef DEBUG_MODE
@@ -21,7 +22,6 @@
 #endif
 
 typedef float DType;
-typedef Eigen::Vector3f ColorType;
 using Eigen::Tensor;
 using Eigen::Dynamic;
 using Eigen::Vector3f;

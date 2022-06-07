@@ -9,6 +9,7 @@
 
 #include <Eigen/Core>
 
+#include "utils.hpp"
 #include "triangle.hpp"
 
 using Eigen::Vector3f;
@@ -16,7 +17,7 @@ using Eigen::Vector3f;
 namespace voxel {
 class Mesh2D {
 public:
-    static Vector3f mesh_color;
+    static ColorType mesh_color;
     std::vector<Eigen::Vector3f> vertex_pos_;
     std::vector<Eigen::Vector3i> indices_;
     float z_;
@@ -33,6 +34,7 @@ public:
 };
 
 class Mesh3D : public Mesh2D{
+    //TODO:设计新的继承方式，否则变量z会报warning
     ;
 };
 class Cube : public Mesh3D {

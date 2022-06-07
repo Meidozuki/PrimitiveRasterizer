@@ -37,7 +37,7 @@ int main() {
     obj_loader.loadObjFile("../cow.obj");
 
     raster.setModel(getModelMatrix(30));
-    raster.setView(getViewMatrix({0,0,3}));
+    raster.setView(getViewMatrix({0,1,3}));
     raster.setProjection(GetProjectionMatrix(60, 1, 0.1, 10));
 
 //    auto& vertices=obj_loader.vertices_buf;
@@ -61,8 +61,10 @@ int main() {
 
     triangle_list.clear();
 //    voxel::Rectangle rect(0.9,0,0,0.9);
-    voxel::Cube rect(0,0,0,0.5,0.5,0.5);
-    rect.getTriangles(triangle_list);
+//    rect.getTriangles(triangle_list);
+    voxel::Cube cube(0,0,0,0.5,0.5,0.5);
+    voxel::Mesh2D::setMeshColor({0,0,1});
+    cube.getTriangles(triangle_list);
     raster.draw(triangle_list);
 
 
