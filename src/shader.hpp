@@ -5,31 +5,35 @@
 #ifndef RASTERIZER_SHADER_HPP
 #define RASTERIZER_SHADER_HPP
 
+#include <optional>
+
 #include <Eigen/Core>
 
 #include "utils.hpp"
+#include "illuminant.hpp"
 
+using std::optional;
 using Eigen::Vector3f;
+using Eigen::Array3f;
 
 class Shader {
 public:
-    ColorType ka_;
-    ColorType kd_;
-    ColorType ks_;
-    Vector3f eye_pos;
-    float ambient_intensity;
 
-    Shader():ambient_intensity(0.5) {
-        ka_ = ColorType::Constant(0.05);
-        kd_ = ColorType::Ones();
-        ks_ = ColorType::Constant(0.6);
-    }
+    Array3f ka_;
+    Array3f kd_;
+    Array3f ks_;
+    Vector3f eye_pos;
+    lighting::AmbientLight ambient_light_;
+    lighting::PointLight  point_light_;
+
+    Shader();
 
     void setEyePosition(const Vector3f &eye) {eye_pos = eye;}
+    void setAmbient(optional<Vector3f> ka, optional<float> intense = std::nullopt);
     void setAmbientKa(const Vector3f &ka) {ka_ = ka;}
-    void setAmbientIntensity(float intense) {ambient_intensity=intense;}
+    void setDiffuseKd(const Vector3f &kd) {kd_ = kd;}
 
-    void shadeColor();
+    Array3f shadeColor(Vector3f shade_point, Vector3f surface_normal, Vector3f surface_para);
 };
 
 #endif //RASTERIZER_SHADER_HPP
