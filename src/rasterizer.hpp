@@ -6,8 +6,6 @@
 #define MAIN_CPP_RASTERIZER_HPP
 
 #include <iostream>
-#include <sstream>
-#include <stdexcept>
 #include <tuple>
 #include <map>
 
@@ -17,8 +15,8 @@
 #include "utils.hpp"
 #include "triangle.hpp"
 
-#ifndef DEBUG_MODE
-  #define DEBUG_MODE 1
+#ifndef GENERAL_DEBUG_MODE
+  #define GENERAL_DEBUG_MODE 1
 #endif
 
 typedef float DType;
@@ -50,10 +48,12 @@ public:
     typedef float ZBufferType;
 
 private:
-    int width_, height_;
     Tensor<DType, 3> frame_buffer_; // 3-dim tensor
     Eigen::Matrix<ZBufferType, Dynamic, Dynamic> z_buffer_;
+
+    int width_, height_;
     Eigen::Matrix4f model_, view_, projection_;
+    Eigen::Vector3f eye_pos_;
 
 
 public:
@@ -71,6 +71,8 @@ public:
 
     //setters
     void clearBuffer(Buffers );
+    void setEyePos(const Eigen::Vector3f &pos);
+
     void setModel(const Eigen::Matrix4f &model)         {model_ = model;}
     void setView(const Eigen::Matrix4f &view)           {view_ = view;}
     void setProjection(const Eigen::Matrix4f &project)  {projection_ = project;}
@@ -79,13 +81,13 @@ public:
 
     void draw(const std::vector<Triangle> &triangles);
     void drawLine(Vector3f begin,Vector3f end);
-    void drawTriangle(const Triangle &tri);
+    void drawTriangle(const Triangle &tri, const array<Vector3f, 3> &shade_point);
 
 };
 
 
 inline void Rasterizer::setPixel(int x,int y,const ColorType& color) {
-#if DEBUG_MODE
+#if GENERAL_DEBUG_MODE
     if (x < 0 || x > width_ ||
         y < 0 || y > height_)
     {
@@ -106,7 +108,7 @@ inline void Rasterizer::setPixel(int x,int y,const ColorType& color) {
 }
 
 inline void Rasterizer::setDepth(int x, int y, ZBufferType z) {
-#if DEBUG_MODE
+#if GENERAL_DEBUG_MODE
     if (x < 0 || x > width_ ||
         y < 0 || y > height_)
     {

@@ -25,20 +25,19 @@ int main() {
     std::default_random_engine e;
     std::uniform_real_distribution<float> u(0,1);
 
-    std::cout << "Hello, World!" << std::endl;
 
     const int height=300,width=400;
     Rasterizer raster(height,width);
-    raster.clearBuffer(Buffers::Color | Buffers::Depth);
+
+    float angle = 10;
+    raster.setModel(getModelMatrix(angle));
+    raster.setView(getViewMatrix({0,1,3}));
+    raster.setProjection(GetProjectionMatrix(60, 1, 0.1, 10));
 
     std::vector<Triangle> triangle_list;
 
     ObjLoader obj_loader;
     obj_loader.loadObjFile("../cow.obj");
-
-    raster.setModel(getModelMatrix(30));
-    raster.setView(getViewMatrix({0,1,3}));
-    raster.setProjection(GetProjectionMatrix(60, 1, 0.1, 10));
 
 //    auto& vertices=obj_loader.vertices_buf;
 //    for (Eigen::Vector3i &index: obj_loader.indices_buf) {
@@ -57,24 +56,42 @@ int main() {
 //    }
 //    raster.draw(triangle_list);
 
-    test_triangle();
+    int key =0;
+    while (key != 27) {
+        raster.clearBuffer(Buffers::Color | Buffers::Depth);
 
-    triangle_list.clear();
-//    voxel::Rectangle rect(0.9,0,0,0.9);
-//    rect.getTriangles(triangle_list);
-    voxel::Cube cube(0,0,0,0.5,0.5,0.5);
-    voxel::Mesh2D::setMeshColor({0,0,1});
-    cube.getTriangles(triangle_list);
-    raster.draw(triangle_list);
+        raster.setModel(getModelMatrix(angle));
+        raster.setEyePos({0,1,3});
+        raster.setProjection(GetProjectionMatrix(60, 1, 0.1, 10));
 
 
-    cv::Mat image(height,width,CV_32FC3);
-    cv::eigen2cv(raster.framebuffer(),image);
-    cv::cvtColor(image,image,cv::COLOR_BGR2RGB);
-    cv::flip(image,image,0); //竖直翻转
-    cv::imshow("image",image);
+//        test_triangle();
+//        test_cone();
 
-    cv::waitKey();
+        triangle_list.clear();
+    //    voxel::Rectangle rect(0.9,0,0,0.9);
+    //    rect.getTriangles(triangle_list);
+        voxel::Mesh::setMeshColor({0,0.5,0.7});
+//        voxel::Cube cube(0,0,0,0.5,0.5,0.5);
+//        cube.getTriangles(triangle_list);
+
+        voxel::Cone cone(16,{0,0.5,0},0.5);
+        cone.getTriangles(triangle_list);
+        voxel::Cone cone2(16,{0,0.5,0},0.5,-1);
+        cone2.getTriangles(triangle_list);
+
+        raster.draw(triangle_list);
+
+
+        cv::Mat image(height,width,CV_32FC3);
+        cv::eigen2cv(raster.framebuffer(),image);
+        cv::cvtColor(image,image,cv::COLOR_BGR2RGB);
+        cv::flip(image,image,0); //竖直翻转
+        cv::imshow("image",image);
+
+        key = cv::waitKey(400);
+        angle += 10;
+    }
 
     return 0;
 }

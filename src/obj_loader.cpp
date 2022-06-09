@@ -39,7 +39,7 @@ void ObjLoader::loadObjFile(std::string filename) {
             if (f_mode == -1) {
                 int cnt = std::count(oneline.begin(),oneline.end(),'/');
                 if (cnt % 3 != 0) {
-                    throw std::runtime_error("The number of / in f line is 3*k.\n");
+                    throw std::runtime_error("The number of / in f line should be 3*k.\n");
                 }
                 f_mode = cnt / 3;
             }
@@ -58,7 +58,7 @@ void ObjLoader::loadObjFile(std::string filename) {
                         ss >> vs[i] >> c >> vts[i] >> c >> vns[i];
                         break;
                     default:
-                        throw std::out_of_range(".obj f format error.\n");
+                        throw std::invalid_argument(".obj f format error.\n");
                 }
             }
 
