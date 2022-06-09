@@ -5,9 +5,13 @@
 #ifndef MAIN_CPP_SRC_UTILS_HPP_
 #define MAIN_CPP_SRC_UTILS_HPP_
 
+#include <sstream>
 #include <stdexcept>
 
 #include <Eigen/Core>
+
+#define GENERAL_DEBUG_MODE 1
+#define VERBOSE_DEBUG_MODE 1
 
 typedef Eigen::Vector3f ColorType;
 

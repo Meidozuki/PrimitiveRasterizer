@@ -6,17 +6,24 @@
 
 namespace voxel {
 //static member
-ColorType Mesh2D::mesh_color = Vector3f(1,1,1);
+ColorType Mesh::mesh_color = Vector3f(1,1,1);
 
-void Mesh2D::getTriangles(std::vector<Triangle> &tri_list) {
-    int len = indices_.size();
+void Mesh::getTriangles(std::vector<Triangle> &tri_list) {
+    const int len = indices_.size();
     for (int i=0;i < len;++i) {
         Triangle tri;
         for (int j=0;j < 3;++j) {
             int vertex_idx = indices_[i][j];
             tri.setVertex(j, vertex_pos_[vertex_idx]);
         }
-        tri.setAllColors(Mesh2D::mesh_color);
+        tri.setAllColors(Mesh::mesh_color);
+
+        if (!vertex_normal_.empty() && !indices_vn_.empty()) {
+            for (int j=0;j < 3;++j) {
+                int vn_idx = indices_vn_[i][j];
+                tri.normal_[j]= vertex_normal_.at(vn_idx);
+            }
+        }
 
         tri_list.push_back(std::move(tri));
     }
@@ -38,26 +45,51 @@ Rectangle::Rectangle(float top, float left, float bottom, float right,
 Cube::Cube(float x1, float y1, float z1, float x2, float y2, float z2) {
 
     vertex_pos_.emplace_back(x1,y1,z1);
-    vertex_pos_.emplace_back(x1,y1,z2);
     vertex_pos_.emplace_back(x1,y2,z1);
-    vertex_pos_.emplace_back(x1,y2,z2);
     vertex_pos_.emplace_back(x2,y1,z1);
-    vertex_pos_.emplace_back(x2,y1,z2);
     vertex_pos_.emplace_back(x2,y2,z1);
+    vertex_pos_.emplace_back(x1,y1,z2);
+    vertex_pos_.emplace_back(x1,y2,z2);
+    vertex_pos_.emplace_back(x2,y1,z2);
     vertex_pos_.emplace_back(x2,y2,z2);
 
+    vertex_normal_.emplace_back(0,0,-1);
+    vertex_normal_.emplace_back(0,0, 1);
+    vertex_normal_.emplace_back(0,-1,0);
+    vertex_normal_.emplace_back(0, 1,0);
+    vertex_normal_.emplace_back(-1,0,0);
+    vertex_normal_.emplace_back( 1,0,0);
+
+    //bottom
     indices_.emplace_back(1,2,0);
     indices_.emplace_back(1,2,3);
-    indices_.emplace_back(1,4,0);
-    indices_.emplace_back(1,4,5);
+    indices_vn_.emplace_back(Vector3i::Constant(0));
+    indices_vn_.emplace_back(Vector3i::Constant(0));
+    //front
     indices_.emplace_back(2,4,0);
     indices_.emplace_back(2,4,6);
+    indices_vn_.emplace_back(Vector3i::Constant(2));
+    indices_vn_.emplace_back(Vector3i::Constant(2));
+    //left
+    indices_.emplace_back(1,4,0);
+    indices_.emplace_back(1,4,5);
+    indices_vn_.emplace_back(Vector3i::Constant(4));
+    indices_vn_.emplace_back(Vector3i::Constant(4));
+    //top
     indices_.emplace_back(5,6,4);
     indices_.emplace_back(5,6,7);
+    indices_vn_.emplace_back(Vector3i::Constant(1));
+    indices_vn_.emplace_back(Vector3i::Constant(1));
+    //back
     indices_.emplace_back(3,5,1);
     indices_.emplace_back(3,5,7);
+    indices_vn_.emplace_back(Vector3i::Constant(3));
+    indices_vn_.emplace_back(Vector3i::Constant(3));
+    //right
     indices_.emplace_back(3,6,2);
     indices_.emplace_back(3,6,7);
+    indices_vn_.emplace_back(Vector3i::Constant(5));
+    indices_vn_.emplace_back(Vector3i::Constant(5));
 
 }
 }

@@ -10,9 +10,11 @@
 
 #include "drawing_methods.hpp"
 #include "utils.hpp"
+#include "shader.hpp"
 
 typedef const Eigen::Vector3f& Vector3fCRef;
 typedef std::tuple<float, float, float> Tuple3Df;
+using std::cout, std::endl;
 
 struct InterpolateFn {
     //alpha -> AB, beta -> AC
@@ -97,16 +99,22 @@ bool insideTriangle(int x, int y, const std::array<Vector3f, 3> &vertices) {
 }
 
 
-void Rasterizer::drawTriangle(const Triangle &tri) {
+void Rasterizer::drawTriangle(const Triangle &tri, std::array<Vector3f, 3> &shade_point) {
     //TODO: 处理edge
     Eigen::Matrix3f vertex_data;
     vertex_data << tri.vertex_[0], tri.vertex_[1], tri.vertex_[2];
+
+
+//    auto v1=shade_point[1]-shade_point[0];
+//    auto v2=shade_point[2]-shade_point[0];
+//    auto normal=v1.cross(v2);
+//    normal.normalize();
 
     Vector3f &&min_v = vertex_data.rowwise().minCoeff();
     int infX = std::floor(min_v.x()), infY = std::floor(min_v.y());
     Vector3f &&max_v = vertex_data.rowwise().maxCoeff();
     int supX = std::floor(max_v.x()), supY = std::floor(max_v.y());
-#if DEBUG_MODE > 1
+#if VERBOSE_DEBUG_MODE > 1
     std::clog << "drawTriangle received:\n" << vertex_data << std::endl;
     std::clog << "boundings: " << infX << ' ' << infY << ' ' << supX << ' ' << supY << std::endl;
 #endif
@@ -114,11 +122,6 @@ void Rasterizer::drawTriangle(const Triangle &tri) {
     for (int x = infX;x < supX;++x) {
         for (int y = infY;y < supY;++y) {
             //若使用C++17结构化绑定，clang会在下面的lambda表达式报错，因此用C++11版本
-            if (!insideTriangle(x,y,tri.vertex_)) {
-                continue;
-            }
-
-
             float alpha, beta, gamma, det;
             std::tie(alpha, beta, det) = computeBarycentric2D(Vector3f(x,y,0.0), tri.vertex_);
             if (det == 0) {
@@ -127,9 +130,9 @@ void Rasterizer::drawTriangle(const Triangle &tri) {
             }
             alpha /= det, beta /= det;
             gamma = 1 - alpha - beta;
-//            if (!insideTriangle_Barycentric(alpha,beta,gamma)) {
-//                continue;
-//            }
+            if (!insideTriangle_Barycentric(alpha,beta,gamma)) {
+                continue;
+            }
 
             InterpolateFn interpolate(alpha,beta,gamma);
 
@@ -141,8 +144,20 @@ void Rasterizer::drawTriangle(const Triangle &tri) {
 
             setDepth(x,y,z);
 
-            ColorType color = interpolate(tri.getColor(0),tri.getColor(1),tri.getColor(2));
-            setPixel(x,y,color);
+            ColorType interpolated_color = interpolate(tri.getColor(0),tri.getColor(1),tri.getColor(2));
+
+            Shader shader;
+
+            //正交(透视)投影前的顶点xyz
+            Vector3f interpolated_viewpos = interpolate(shade_point[0], shade_point[1], shade_point[2]);
+            Vector3f normal = interpolate(tri.normal_[0],tri.normal_[1],tri.normal_[2]);
+
+
+            auto new_color = shader.shadeColor(interpolated_viewpos,normal,interpolated_color);
+//            std::cout << "viewpos " << interpolated_viewpos.transpose();
+//            std::cout << "color " << interpolated_color.transpose() << " after " << new_color.transpose() << std::endl;
+
+            setPixel(x,y,new_color);
         }
     }
 
@@ -150,44 +165,52 @@ void Rasterizer::drawTriangle(const Triangle &tri) {
 
 void Rasterizer::draw(const std::vector<Triangle> &triangles) {
 
-    float f1 = (50 - 0.1) / 2.0;
-    float f2 = (50 + 0.1) / 2.0;
+
+    float z_scale = (50 - 0.1) / 2.0, z_affine = (50 + 0.1) / 2.0;
 
 
     Eigen::Matrix4f mv  = view_ * model_;
     Eigen::Matrix4f mvp = projection_ * view_ * model_;
-    std::cout << mvp << std::endl;
+//    std::cout << "mvp" << mvp << std::endl;
 
     for (const auto& tri : triangles) {
         //之后换成指针
         Triangle new_tri = tri;
 
+        //设置顶点
         std::array<Eigen::Vector4f, 3> vertex;
+
         for (int i=0;i < 3;++i) {
             vertex[i] = Vector3to4(tri.vertex_[i]);
-        }
 
-        std::array<Vector3f, 3> viewspace_pos;
-        for (int i=0;i < 3;++i) {
-            viewspace_pos[i] = (mv * vertex[i]).head(3);
-        }
-//        std::cout << tri.vertex_[0] << std::endl;
-//        std::cout << viewspace_pos[0] << std::endl;
-
-        for (int i=0;i < 3;++i) {
             Eigen::Vector4f new_vertex = mvp * vertex[i];
-            new_vertex/=new_vertex.w();
+            new_vertex /= new_vertex.w();
 //            std::cout << "point " << new_vertex << std::endl;
             new_vertex.x() = 0.5 * width_ * (1.0f + new_vertex.x());
             new_vertex.y() = 0.5 * height_ * (1.0f + new_vertex.y());
-            new_vertex.z() = new_vertex.z() * f1 + f2;
+            new_vertex.z() = new_vertex.z() * z_scale + z_affine;
 
             new_tri.vertex_[i] = new_vertex.head(3);
         }
 
-        //TODO: 设置normal
+        //寻找shading point
+        std::array<Vector3f, 3> shade_point;
+        for (int i=0;i < 3;++i) {
+            shade_point[i] = (mv * vertex[i]).head(3);
+        }
+//        std::cout << tri.vertex_[0] << std::endl;
+//        std::cout << shade_point[0] << std::endl;
 
-        drawTriangle(new_tri);
+        //设置normal
+        Eigen::Matrix4f inv_trans = mv.reverse().transpose();
+        Eigen::Vector4f n[3];
+        for (int i=0;i < 3;++i) {
+            n[i] = inv_trans * Vector3to4(tri.normal_[i],0);
+            new_tri.normal_[i] = n[i].head(3);
+        }
+
+
+        drawTriangle(new_tri, shade_point);
     }
 
 }

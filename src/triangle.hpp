@@ -23,6 +23,7 @@ class Triangle {
 public:
     array<Vector3f ,3> vertex_;
     array<Vector3f ,3> color_;
+    array<Vector3f ,3> normal_;
 
     Triangle();
 

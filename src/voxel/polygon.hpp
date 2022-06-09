@@ -13,18 +13,27 @@
 #include "triangle.hpp"
 
 using Eigen::Vector3f;
+using Eigen::Vector3i;
 
 namespace voxel {
-class Mesh2D {
+class Mesh {
 public:
     static ColorType mesh_color;
-    std::vector<Eigen::Vector3f> vertex_pos_;
-    std::vector<Eigen::Vector3i> indices_;
-    float z_;
-
     static void setMeshColor(const Vector3f &color) {mesh_color = color;}
 
+    std::vector<Eigen::Vector3f> vertex_pos_;
+    std::vector<Eigen::Vector3i> indices_;
+    std::vector<Eigen::Vector3f> vertex_normal_;
+    std::vector<Eigen::Vector3i> indices_vn_;
+
     void getTriangles(std::vector<Triangle> &tri_list);
+};
+
+class Mesh2D : public Mesh {
+public:
+    int alighed_axis; //TODO:修改这一部分
+    float z_;
+
 };
 
 class Rectangle : public Mesh2D {
@@ -34,7 +43,7 @@ public:
 };
 
 class Mesh3D : public Mesh2D{
-    //TODO:设计新的继承方式，否则变量z会报warning
+    //考虑调用矩形绘制立方体
     ;
 };
 class Cube : public Mesh3D {
