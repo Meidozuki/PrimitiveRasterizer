@@ -9,9 +9,6 @@
 
 #include <Eigen/Core>
 
-#include "utils.hpp"
-constexpr double PI = 3.1415926;
-
 Eigen::Matrix4f getModelMatrix(float rotation_angle);
 Eigen::Matrix4f getViewMatrix(Eigen::Vector3f eye_pos);
 Eigen::Matrix4f GetProjectionMatrix(float fov_Y, float aspect_ratio,

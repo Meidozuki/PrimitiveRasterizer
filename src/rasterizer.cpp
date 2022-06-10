@@ -8,9 +8,9 @@
 #include <climits>
 #include <array>
 
-#include "utils.hpp"
+#include "util_define.hpp"
+#include "util_func.hpp"
 #include "drawing_methods.hpp"
-#include "shader.hpp"
 #include "basic_matrix.hpp"
 
 typedef std::tuple<float, float, float> Tuple3Df;
@@ -52,11 +52,23 @@ void Rasterizer::clearBuffer(Buffers buffer_instruct) {
 }
 
 void Rasterizer::setEyePos(const Eigen::Vector3f &pos) {
+    shader_.eye_pos_ = pos;
     eye_pos_ = pos;
     setView(getViewMatrix(eye_pos_));
 }
 
 
+//————————getters
+Eigen::Vector3f Rasterizer::getShadeEyePos() {
+    //TODO:绑定变化，减少计算
+    static Eigen::Matrix4f inv = model_.inverse(), previous_model = model_;
+    if (model_ != previous_model) {
+        inv = model_.inverse();
+        previous_model = model_;
+    }
+    Eigen::Vector4f &&pos = inv * Vector3to4(eye_pos_);
+    return (pos / pos.w()).head(3);
+}
 
 //————————drawing
 using namespace line_drawing;
@@ -126,6 +138,14 @@ void Rasterizer::drawTriangle(const Triangle &tri, const array<Vector3f, 3> &sha
     int infX = std::floor(min_v.x()), infY = std::floor(min_v.y());
     Vector3f &&max_v = vertex_data.rowwise().maxCoeff();
     int supX = std::floor(max_v.x()), supY = std::floor(max_v.y());
+#if GENERAL_DEBUG_MODE
+    if (infX < 0 || infY < 0 || supX >= width_ || supY >= height_) {
+        std::cerr << "drawTriangle: X or Y out of range,consider clip" << std::endl;
+        std::cerr << "infX,infY,supX,supY = " << infX << ',' << infY<< ',' << supX << ',' << supY << std::endl;
+        infX = std::max(0,infX), infY = std::max(0,infY);
+        supX = std::min(width_,supX), supY = std::min(height_,supY);
+    }
+#endif
 #if VERBOSE_DEBUG_MODE > 1
     std::clog << "drawTriangle received:\n" << vertex_data << std::endl;
     std::clog << "boundings: " << infX << ' ' << infY << ' ' << supX << ' ' << supY << std::endl;
@@ -158,16 +178,13 @@ void Rasterizer::drawTriangle(const Triangle &tri, const array<Vector3f, 3> &sha
 
             ColorType interpolated_color = interpolate(tri.getColor(0),tri.getColor(1),tri.getColor(2));
 
-            Shader shader;
-            shader.setEyePosition(eye_pos_);
 
-//            已改//正交(透视)投影前的顶点xyz
+            //世界坐标系下的xyz
             Vector3f interpolated_pos = interpolate(shade_point[0], shade_point[1], shade_point[2]);
             Vector3f normal = interpolate(tri.normal_[0],tri.normal_[1],tri.normal_[2]);
 
 
-            auto new_color = shader.shadeColor(interpolated_pos, normal, interpolated_color);
-//            std::cout << "viewpos " << interpolated_pos.transpose();
+            auto new_color = shader_.shadeColor(interpolated_pos, normal, interpolated_color);
 //            std::cout << "color " << interpolated_color.transpose() << " after " << new_color.transpose() << std::endl;
 
             setPixel(x,y,new_color);
@@ -181,6 +198,7 @@ void Rasterizer::draw(const std::vector<Triangle> &triangles) {
 
     float z_scale = (50 - 0.1) / 2.0, z_affine = (50 + 0.1) / 2.0;
 
+    shader_.eye_pos_ = getShadeEyePos();
 
     Eigen::Matrix4f mv  = view_ * model_;
     Eigen::Matrix4f mvp = projection_ * view_ * model_;

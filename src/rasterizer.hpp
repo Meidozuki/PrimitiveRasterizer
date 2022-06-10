@@ -12,8 +12,9 @@
 #include <Eigen/Core>
 #include "unsupported/Eigen/CXX11/Tensor"
 
-#include "utils.hpp"
+#include "util_define.hpp"
 #include "triangle.hpp"
+#include "shader.hpp"
 
 #ifndef GENERAL_DEBUG_MODE
   #define GENERAL_DEBUG_MODE 1
@@ -55,6 +56,7 @@ private:
     Eigen::Matrix4f model_, view_, projection_;
     Eigen::Vector3f eye_pos_;
 
+    Shader shader_;
 
 public:
     Rasterizer(int h,int w);
@@ -68,6 +70,7 @@ public:
     std::tuple<int, int> get_framebuffer_shape() {
         return {frame_buffer_.dimension(0),frame_buffer_.dimension(1)};
     }
+    Eigen::Vector3f getShadeEyePos();
 
     //setters
     void clearBuffer(Buffers );

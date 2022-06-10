@@ -9,7 +9,7 @@
 
 #include <Eigen/Core>
 
-#include "utils.hpp"
+#include "util_define.hpp"
 #include "triangle.hpp"
 
 using Eigen::Vector3f;
