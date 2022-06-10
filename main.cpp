@@ -36,25 +36,6 @@ int main() {
 
     std::vector<Triangle> triangle_list;
 
-    ObjLoader obj_loader;
-    obj_loader.loadObjFile("../cow.obj");
-
-//    auto& vertices=obj_loader.vertices_buf;
-//    for (Eigen::Vector3i &index: obj_loader.indices_buf) {
-//        Triangle tri;
-//        for (int i=0;i < 3;++i) {
-//            int idx=index[i];
-//            auto vert=vertices[idx];
-//            tri.setVertex(i, vert);
-//        }
-//        float col=tanh(tri.vertex_[0].z())/2+0.5;
-//        col=1;
-//        tri.setColor(0,{0,0,col});
-//        tri.setColor(1,{0,0,col});
-//        tri.setColor(2,{0,0,col});
-//        triangle_list.push_back(std::move(tri));
-//    }
-//    raster.draw(triangle_list);
 
     int key =0;
     while (key != 27) {
@@ -65,8 +46,6 @@ int main() {
         raster.setProjection(GetProjectionMatrix(60, 1, 0.1, 10));
 
 
-//        test_triangle();
-//        test_cone();
 
         triangle_list.clear();
 
