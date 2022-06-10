@@ -10,7 +10,7 @@
 
 #include "util_define.hpp"
 #include "util_func.hpp"
-#include "drawing_methods.hpp"
+#include "straight_line.hpp"
 #include "basic_matrix.hpp"
 
 typedef std::tuple<float, float, float> Tuple3Df;
@@ -71,9 +71,12 @@ Eigen::Vector3f Rasterizer::getShadeEyePos() {
 }
 
 //————————drawing
-using namespace line_drawing;
-void Rasterizer::drawLine(Vector3f begin,Vector3f end) {
-    drawLine_Bresenham(begin.x(),begin.y(),end.x(),end.y(),*this);
+void Rasterizer::drawLine(const Vector3f & begin, const Vector3f & end, const ColorType &color) {
+    Line line;
+    line.begin = begin;
+    line.end = end;
+    line.color = color;
+    line_drawing::drawLine(line,*this);
 
 }
 
@@ -124,15 +127,9 @@ bool insideTriangle(int x, int y, const std::array<Vector3f, 3> &vertices) {
 
 
 void Rasterizer::drawTriangle(const Triangle &tri, const array<Vector3f, 3> &shade_point) {
-    //TODO: 处理edge
+    //TODO: 处理edge情况
     Eigen::Matrix3f vertex_data;
     vertex_data << tri.vertex_[0], tri.vertex_[1], tri.vertex_[2];
-
-
-//    auto v1=shade_point[1]-shade_point[0];
-//    auto v2=shade_point[2]-shade_point[0];
-//    auto normal=v1.cross(v2);
-//    normal.normalize();
 
     Vector3f &&min_v = vertex_data.rowwise().minCoeff();
     int infX = std::floor(min_v.x()), infY = std::floor(min_v.y());
@@ -156,7 +153,7 @@ void Rasterizer::drawTriangle(const Triangle &tri, const array<Vector3f, 3> &sha
             //若使用C++17结构化绑定，clang会在下面的lambda表达式报错，因此用C++11版本
             float alpha, beta, gamma, det;
             std::tie(alpha, beta, det) = computeBarycentric2D(Vector3f(x,y,0.0), tri.vertex_);
-            if (det == 0) {
+            if (std::abs(det) <= 1e-5) {
                 std::cerr << "drawing a line-shape triangle.\n";
                 return;
             }

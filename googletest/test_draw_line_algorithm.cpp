@@ -4,7 +4,7 @@
 
 #include "gtest/gtest.h"
 
-#include "drawing_methods.hpp"
+#include "straight_line.hpp"
 using namespace line_drawing;
 
 class LineAlgorithmFixture : public ::testing::Test{

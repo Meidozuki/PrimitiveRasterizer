@@ -83,7 +83,7 @@ public:
     inline void setDepth(int x,int y,ZBufferType z);
 
     void draw(const std::vector<Triangle> &triangles);
-    void drawLine(Vector3f begin,Vector3f end);
+    void drawLine(const Vector3f & begin, const Vector3f & end, const ColorType &color);
     void drawTriangle(const Triangle &tri, const array<Vector3f, 3> &shade_point);
 
 };

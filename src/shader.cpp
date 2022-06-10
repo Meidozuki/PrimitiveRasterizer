@@ -44,7 +44,7 @@ Array3f Shader::shadeColor(Vector3f shade_point, Vector3f surface_normal, Vector
 
     color = color + ambient + diffuse + specular;
     //如果大于1则clip
-    color = (color >= 1.0f).select(Array3f::Ones(),color);
+    color = (color >= 1.0f).select(Array3f::Ones(), color);
     return color;
 }
 
