@@ -4,6 +4,11 @@
 
 #include "polygon.hpp"
 
+#include <cmath>
+#include <iostream>
+
+#define SEE_VERTEX_AND_NORMAL 0
+
 namespace voxel {
 //static member
 ColorType Mesh::mesh_color = Vector3f(1,1,1);
@@ -20,7 +25,7 @@ void Mesh::getTriangles(std::vector<Triangle> &tri_list) {
 
         if (!vertex_normal_.empty() && !indices_vn_.empty()) {
             for (int j=0;j < 3;++j) {
-                int vn_idx = indices_vn_[i][j];
+                int vn_idx = indices_vn_.at(i)[j];
                 tri.normal_[j]= vertex_normal_.at(vn_idx);
             }
         }
@@ -40,6 +45,60 @@ Rectangle::Rectangle(float top, float left, float bottom, float right,
 
     indices_.emplace_back(0,1,2);
     indices_.emplace_back(1,2,3);
+}
+
+Cone::Cone(int edges, const Eigen::Array3f& center, float radius, float tip_relative) {
+    assert (edges >= 3);
+#if GENERAL_DEBUG_MODE
+    if (std::abs(tip_relative) < 1e-5) {
+        throw std::invalid_argument("Cone received a zero *tip_relative* arg");
+    }
+#endif
+
+    float axis_coef = tip_relative > 0 ? 1 : -1;
+    float step_angle = 2.0 * M_PI / edges;
+    set_tip(Eigen::Array3f(0,tip_relative,0) * radius + center);
+    vertex_pos_.emplace_back(tip_);
+
+    for (int i=0;i < edges;++i) {
+        float angle = step_angle * i;
+        Eigen::Array3f vert(std::cos(angle),0,std::sin(angle));
+        vertex_pos_.emplace_back(vert * radius + center);
+    }
+
+    if (SEE_VERTEX_AND_NORMAL) {
+        std::cout << "vertices\n";
+        for (auto v:vertex_pos_) {
+            std::cout << (v-Vector3f(0,0.5,0)).transpose().array()/0.5 << std::endl;
+        }
+        std::cout << "--------\n";
+
+    }
+
+    //n-2个底面
+    Vector3f bottom_normal(0,-1,0);
+    vertex_normal_.emplace_back(bottom_normal * axis_coef);
+    for (int i=2;i < edges;++i) {
+        indices_.emplace_back(1,i,i+1);
+        indices_vn_.emplace_back(Vector3i::Constant(0));
+    }
+    //n个侧面
+    for (int i=0;i < edges;++i) {
+        int idx_a = i, idx_b = i + 1, idx_vn = i+1;
+        if (i == 0) idx_a = edges, idx_b = 1;
+
+        indices_.emplace_back(0,idx_a,idx_b);
+        Vector3f OA = vertex_pos_.at(idx_a) - vertex_pos_[0];
+        Vector3f OB = vertex_pos_.at(idx_b) - vertex_pos_[0];
+        const Vector3f &&normal = OB.cross(OA).normalized();
+        if (SEE_VERTEX_AND_NORMAL)
+            std::cout << normal.transpose() << std::endl;
+
+        vertex_normal_.emplace_back(normal * axis_coef);
+        //由于编号0被底面占了，计数从1开始
+        assert(idx_vn >= 1);
+        indices_vn_.emplace_back(Vector3i::Constant(idx_vn));
+    }
 }
 
 Cube::Cube(float x1, float y1, float z1, float x2, float y2, float z2) {
@@ -90,6 +149,5 @@ Cube::Cube(float x1, float y1, float z1, float x2, float y2, float z2) {
     indices_.emplace_back(3,6,7);
     indices_vn_.emplace_back(Vector3i::Constant(5));
     indices_vn_.emplace_back(Vector3i::Constant(5));
-
 }
 }

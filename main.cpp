@@ -25,12 +25,11 @@ int main() {
     std::default_random_engine e;
     std::uniform_real_distribution<float> u(0,1);
 
-    std::cout << "Hello, World!" << std::endl;
 
     const int height=300,width=400;
     Rasterizer raster(height,width);
 
-    float angle = 30;
+    float angle = 10;
     raster.setModel(getModelMatrix(angle));
     raster.setView(getViewMatrix({0,1,3}));
     raster.setProjection(GetProjectionMatrix(60, 1, 0.1, 10));
@@ -62,21 +61,25 @@ int main() {
         raster.clearBuffer(Buffers::Color | Buffers::Depth);
 
         raster.setModel(getModelMatrix(angle));
-        raster.setView(getViewMatrix({0,1,3}));
+        raster.setEyePos({0,1,3});
         raster.setProjection(GetProjectionMatrix(60, 1, 0.1, 10));
 
 
-    //    test_triangle();
+//        test_triangle();
+//        test_cone();
 
         triangle_list.clear();
     //    voxel::Rectangle rect(0.9,0,0,0.9);
     //    rect.getTriangles(triangle_list);
         voxel::Mesh::setMeshColor({0,0.5,0.7});
-        voxel::Cube cube(0,0,0,0.5,0.5,0.5);
-        cube.getTriangles(triangle_list);
-        voxel::Mesh::setMeshColor({0.7,0.5,0});
-        cube={-0.2,-0.2,-0.2,0,0,0.1};
-        cube.getTriangles(triangle_list);
+//        voxel::Cube cube(0,0,0,0.5,0.5,0.5);
+//        cube.getTriangles(triangle_list);
+
+        voxel::Cone cone(16,{0,0.5,0},0.5);
+        cone.getTriangles(triangle_list);
+        voxel::Cone cone2(16,{0,0.5,0},0.5,-1);
+        cone2.getTriangles(triangle_list);
+
         raster.draw(triangle_list);
 
 
@@ -86,8 +89,8 @@ int main() {
         cv::flip(image,image,0); //竖直翻转
         cv::imshow("image",image);
 
-        key = cv::waitKey(100);
-        angle += 5;
+        key = cv::waitKey(400);
+        angle += 10;
     }
 
     return 0;

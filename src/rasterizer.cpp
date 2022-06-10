@@ -8,11 +8,11 @@
 #include <climits>
 #include <array>
 
-#include "drawing_methods.hpp"
 #include "utils.hpp"
+#include "drawing_methods.hpp"
 #include "shader.hpp"
+#include "basic_matrix.hpp"
 
-typedef const Eigen::Vector3f& Vector3fCRef;
 typedef std::tuple<float, float, float> Tuple3Df;
 using std::cout, std::endl;
 
@@ -28,6 +28,8 @@ struct InterpolateFn {
     }
 };
 
+
+//————————Constructor
 Rasterizer::Rasterizer(int h, int w): width_(w),height_(h) {
     frame_buffer_.resize({height_, width_, 3});
     z_buffer_.resize(height_, width_);
@@ -36,6 +38,8 @@ Rasterizer::Rasterizer(int h, int w): width_(w),height_(h) {
     model_ = view_ = projection_ = Eigen::Matrix4f::Identity();
 }
 
+
+//————————setters
 void Rasterizer::clearBuffer(Buffers buffer_instruct) {
     //为了方便只能用Implicit，是否会有其他问题？
     int buf=buffer_instruct;
@@ -47,6 +51,14 @@ void Rasterizer::clearBuffer(Buffers buffer_instruct) {
     }
 }
 
+void Rasterizer::setEyePos(const Eigen::Vector3f &pos) {
+    eye_pos_ = pos;
+    setView(getViewMatrix(eye_pos_));
+}
+
+
+
+//————————drawing
 using namespace line_drawing;
 void Rasterizer::drawLine(Vector3f begin,Vector3f end) {
     drawLine_Bresenham(begin.x(),begin.y(),end.x(),end.y(),*this);
@@ -99,7 +111,7 @@ bool insideTriangle(int x, int y, const std::array<Vector3f, 3> &vertices) {
 }
 
 
-void Rasterizer::drawTriangle(const Triangle &tri, std::array<Vector3f, 3> &shade_point) {
+void Rasterizer::drawTriangle(const Triangle &tri, const array<Vector3f, 3> &shade_point) {
     //TODO: 处理edge
     Eigen::Matrix3f vertex_data;
     vertex_data << tri.vertex_[0], tri.vertex_[1], tri.vertex_[2];
@@ -147,14 +159,15 @@ void Rasterizer::drawTriangle(const Triangle &tri, std::array<Vector3f, 3> &shad
             ColorType interpolated_color = interpolate(tri.getColor(0),tri.getColor(1),tri.getColor(2));
 
             Shader shader;
+            shader.setEyePosition(eye_pos_);
 
-            //正交(透视)投影前的顶点xyz
-            Vector3f interpolated_viewpos = interpolate(shade_point[0], shade_point[1], shade_point[2]);
+//            已改//正交(透视)投影前的顶点xyz
+            Vector3f interpolated_pos = interpolate(shade_point[0], shade_point[1], shade_point[2]);
             Vector3f normal = interpolate(tri.normal_[0],tri.normal_[1],tri.normal_[2]);
 
 
-            auto new_color = shader.shadeColor(interpolated_viewpos,normal,interpolated_color);
-//            std::cout << "viewpos " << interpolated_viewpos.transpose();
+            auto new_color = shader.shadeColor(interpolated_pos, normal, interpolated_color);
+//            std::cout << "viewpos " << interpolated_pos.transpose();
 //            std::cout << "color " << interpolated_color.transpose() << " after " << new_color.transpose() << std::endl;
 
             setPixel(x,y,new_color);
@@ -194,23 +207,24 @@ void Rasterizer::draw(const std::vector<Triangle> &triangles) {
         }
 
         //寻找shading point
-        std::array<Vector3f, 3> shade_point;
-        for (int i=0;i < 3;++i) {
-            shade_point[i] = (mv * vertex[i]).head(3);
-        }
+//        std::array<Vector3f, 3> shade_point;
+//        for (int i=0;i < 3;++i) {
+//            shade_point[i] = (mv * vertex[i]).head(3);
+//        }
 //        std::cout << tri.vertex_[0] << std::endl;
 //        std::cout << shade_point[0] << std::endl;
 
         //设置normal
-        Eigen::Matrix4f inv_trans = mv.reverse().transpose();
-        Eigen::Vector4f n[3];
+//        Eigen::Matrix4f inv_trans = mv.reverse().transpose();
+//        Eigen::Vector4f n[3];
         for (int i=0;i < 3;++i) {
-            n[i] = inv_trans * Vector3to4(tri.normal_[i],0);
-            new_tri.normal_[i] = n[i].head(3);
+//            n[i] = inv_trans * Vector3to4(tri.normal_[i],0);
+//            new_tri.normal_[i] = n[i].head(3);
+            new_tri.normal_[i] = tri.normal_[i];
         }
 
 
-        drawTriangle(new_tri, shade_point);
+        drawTriangle(new_tri, tri.vertex_);
     }
 
 }

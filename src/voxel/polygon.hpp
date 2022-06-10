@@ -46,10 +46,22 @@ class Mesh3D : public Mesh2D{
     //考虑调用矩形绘制立方体
     ;
 };
+
 class Cube : public Mesh3D {
 public:
     Cube();
     Cube(float x1,float y1,float z1,float x2,float y2,float z2);
+};
+using Cuboid = Cube; //长方体
+
+class Cone : public Mesh3D {
+public:
+    //默认正多棱锥
+    Eigen::Array3f tip_;
+    Cone();
+    Cone(int edges, const Eigen::Array3f& center, float radius = 1.0, float tip_relative = 1.0);
+
+    void set_tip(const Eigen::Array3f& tip) {tip_ = tip;}
 };
 
 }

@@ -10,6 +10,7 @@
 #include <Eigen/Core>
 
 #include "utils.hpp"
+#include "illuminant.hpp"
 
 using std::optional;
 using Eigen::Vector3f;
@@ -17,30 +18,15 @@ using Eigen::Array3f;
 
 class Shader {
 public:
-    struct Light {
-        //暂时只处理方向光
-        int type;
-        Array3f color;
-        float intensity;
-        Vector3f position;
-
-        Light(float intense=1.0): intensity(intense),color(Array3f::Ones()) {}
-    };
 
     Array3f ka_;
     Array3f kd_;
     Array3f ks_;
     Vector3f eye_pos;
-    Light ambient_light_, point_light_;
+    lighting::AmbientLight ambient_light_;
+    lighting::PointLight  point_light_;
 
-    Shader() {
-        ka_ = Array3f::Constant(0.1);
-        kd_ = Array3f::Ones();
-        ks_ = Array3f::Constant(0.6);
-        point_light_.position = {5, 5, -5};
-        point_light_.intensity=50;
-        eye_pos = {0,1,3};
-    }
+    Shader();
 
     void setEyePosition(const Vector3f &eye) {eye_pos = eye;}
     void setAmbient(optional<Vector3f> ka, optional<float> intense = std::nullopt);
