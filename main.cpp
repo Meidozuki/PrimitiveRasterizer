@@ -12,7 +12,7 @@
 #include "basic_matrix.hpp"
 #include "rasterizer.hpp"
 #include "obj_loader.hpp"
-#include "src/voxel/polygon.hpp"
+#include "voxel/polygon.hpp"
 
 #if 1
   #include "debug_test_example.cpp"
@@ -26,12 +26,12 @@ int main() {
     std::uniform_real_distribution<float> u(0,1);
 
 
-    const int height=300,width=400;
+    const int height=600,width=800;
     Rasterizer raster(height,width);
 
     float angle = 10;
     raster.setModel(getModelMatrix(angle));
-    raster.setView(getViewMatrix({0,1,3}));
+    raster.setView(getViewMatrix({0,1.5,3}));
     raster.setProjection(GetProjectionMatrix(60, 1, 0.1, 10));
 
     std::vector<Triangle> triangle_list;

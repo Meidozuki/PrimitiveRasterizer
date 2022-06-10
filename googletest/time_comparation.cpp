@@ -11,7 +11,7 @@
 #include "gtest/gtest.h"
 
 #define DEBUG_MODE 1
-#include "drawing_methods.hpp"
+#include "straight_line.hpp"
 //#include "drawing_methods.cpp"
 
 using namespace std;
