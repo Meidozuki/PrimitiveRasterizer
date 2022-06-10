@@ -31,9 +31,13 @@ public:
 
 class Mesh2D : public Mesh {
 public:
-    int alighed_axis; //TODO:修改这一部分
+    enum AlignedAxis {axisX,axisY,axisZ};
+    AlignedAxis aligned_axis;
     float z_;
 
+    Mesh2D(): z_(1.0) {aligned_axis = axisZ;}
+
+    void getTriangles(std::vector<Triangle> &tri_list);
 };
 
 class Rectangle : public Mesh2D {

@@ -34,6 +34,50 @@ void Mesh::getTriangles(std::vector<Triangle> &tri_list) {
     }
 }
 
+void Mesh2D::getTriangles(std::vector<Triangle> &tri_list) {
+    using std::swap;
+    std::function<Vector3f (Vector3f&)> swapAxis;
+    if (aligned_axis == axisX) {
+        swapAxis = [](Vector3f& v) {
+          swap(v.x(),v.z());
+          return v;
+        };
+    }
+    else if (aligned_axis == axisY) {
+        swapAxis = [](Vector3f& v) {
+            swap(v.y(),v.z());
+            return v;
+        };
+    }
+    else {
+        swapAxis = [](Vector3f& v) {return v;};
+    }
+
+    const int len = indices_.size();
+    for (int i=0;i < len;++i) {
+        Triangle tri;
+        for (int j=0;j < 3;++j) {
+            int vertex_idx = indices_[i][j];
+            //更改xyz顺序
+            Vector3f vert=vertex_pos_[vertex_idx];
+            tri.setVertex(j, swapAxis(vert));
+        }
+        tri.setAllColors(Mesh::mesh_color);
+
+        if (!vertex_normal_.empty() && !indices_vn_.empty()) {
+            for (int j=0;j < 3;++j) {
+                int vn_idx = indices_vn_.at(i)[j];
+                //更改normal
+                Vector3f normal = vertex_normal_.at(vn_idx);
+                tri.normal_[j]= swapAxis(normal);
+            }
+        }
+
+        tri_list.push_back(std::move(tri));
+    }
+
+}
+
 Rectangle::Rectangle(float top, float left, float bottom, float right,
                      float z) {
     z_=z;
