@@ -9,7 +9,7 @@
 
 #include <Eigen/Core>
 
-#include "utils.hpp"
+#include "util_define.hpp"
 #include "illuminant.hpp"
 
 using std::optional;
@@ -22,13 +22,14 @@ public:
     Array3f ka_;
     Array3f kd_;
     Array3f ks_;
-    Vector3f eye_pos;
+    int specular_power_;
+    Vector3f eye_pos_;
     lighting::AmbientLight ambient_light_;
     lighting::PointLight  point_light_;
 
     Shader();
 
-    void setEyePosition(const Vector3f &eye) {eye_pos = eye;}
+    void setEyePosition(const Vector3f &eye) { eye_pos_ = eye;}
     void setAmbient(optional<Vector3f> ka, optional<float> intense = std::nullopt);
     void setAmbientKa(const Vector3f &ka) {ka_ = ka;}
     void setDiffuseKd(const Vector3f &kd) {kd_ = kd;}

@@ -6,6 +6,8 @@
 
 #include <Eigen/Geometry>  //cross
 
+#include "util_func.hpp"
+
 static inline const Eigen::Vector3f getDefaultCameraLookat() {
     Eigen::Vector3f v(0,0,-1);
     return std::move(v);
@@ -48,7 +50,7 @@ Eigen::Matrix4f getViewMatrix(Eigen::Vector3f eye_pos) {
 Eigen::Matrix4f getModelMatrix(float rotation_angle) {
     Eigen::Matrix4f model = Eigen::Matrix4f::Identity();
 
-    float rotate_radian = rotation_angle / 180 * PI;
+    float rotate_radian = rotation_angle / 180 * M_PI;
 
     Eigen::Matrix4f translate;
     translate << std::cos(rotate_radian), 0, -std::sin(rotate_radian), 0,
@@ -69,7 +71,7 @@ Eigen::Matrix4f GetProjectionMatrix(float fov_Y, float aspect_ratio,
 
     Eigen::Matrix4f projection = Eigen::Matrix4f::Identity();
 
-    float theta = fov_Y / 2 / 180 * PI;
+    float theta = fov_Y / 2 / 180 * M_PI;
     float y_range = zNear * std::tan(theta); //avoid duplicated /2 *2
     float x_range = aspect_ratio * y_range;
     float z_range = (zFar - zNear) / 2;

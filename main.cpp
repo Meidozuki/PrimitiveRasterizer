@@ -69,15 +69,27 @@ int main() {
 //        test_cone();
 
         triangle_list.clear();
-    //    voxel::Rectangle rect(0.9,0,0,0.9);
-    //    rect.getTriangles(triangle_list);
-        voxel::Mesh::setMeshColor({0,0.5,0.7});
-//        voxel::Cube cube(0,0,0,0.5,0.5,0.5);
-//        cube.getTriangles(triangle_list);
 
-        voxel::Cone cone(16,{0,0.5,0},0.5);
+        float startX=-0.2,startY=0.2,startZ=-0.2, cube_size=0.12;
+        int n_cubes=5;
+
+        for (int i=0;i < n_cubes;++i) {
+            for (int j=0;j < n_cubes;++j) {
+                float left = startX + cube_size*2*i;
+                float bottom = startY + cube_size*2*j;
+
+                ColorType color(1.0-(1.0*i/n_cubes),i*cube_size,(1.0*i/n_cubes));
+                voxel::Mesh::setMeshColor(color);
+                voxel::Cube cube(left,bottom,startZ,left+cube_size,bottom+cube_size,startZ+cube_size);
+                cube.getTriangles(triangle_list);
+            }
+        }
+
+        voxel::Mesh::setMeshColor({0,0.5,0.7});
+
+        voxel::Cone cone(16,{0.5,0,0.2},0.15,1.5);
         cone.getTriangles(triangle_list);
-        voxel::Cone cone2(16,{0,0.5,0},0.5,-1);
+        voxel::Cone cone2(16,{0.5,0,0.2},0.15,-1.5);
         cone2.getTriangles(triangle_list);
 
         raster.draw(triangle_list);
@@ -89,7 +101,7 @@ int main() {
         cv::flip(image,image,0); //竖直翻转
         cv::imshow("image",image);
 
-        key = cv::waitKey(400);
+        key = cv::waitKey(100);
         angle += 10;
     }
 
