@@ -12,15 +12,16 @@ inline float non_negative_dot(Vector3f a,Vector3f b) {
 }
 
 Shader::Shader() {
-    ka_ = Array3f::Constant(0.2);
+    ka_ = Array3f::Constant(0.3);
     kd_ = Array3f::Ones();
-    ks_ = Array3f::Constant(0.6);
+    ks_ = Array3f::Constant(0.5);
+    specular_power_ = 16;
     point_light_.light_center = {0, 1.5, 2};
-    point_light_.setIntensity(10);
+    point_light_.setIntensity(8);
 }
 
 Array3f Shader::shadeColor(Vector3f shade_point, Vector3f surface_normal, Vector3f surface_para) {
-    //TODO：更改为世界坐标重新计算
+    //世界坐标系下shade, eye pos提前处理
     Array3f color = {0,0,0};
     Array3f absorb_color = surface_para.array();
 
@@ -29,11 +30,19 @@ Array3f Shader::shadeColor(Vector3f shade_point, Vector3f surface_normal, Vector
 
     // Ld = kd * (I/r^2) * (normal dot light)
     Vector3f light_dir = point_light_.light_center - shade_point;
+    Array3f point_light_intensity = point_light_.intensity() /  light_dir.squaredNorm();
+
     float dot_result = light_dir.normalized() .dot(surface_normal.normalized()) ;
-    Array3f diffuse = absorb_color * kd_ * point_light_.intensity() *\
+    Array3f diffuse = absorb_color * kd_ * point_light_intensity *\
             non_negative_dot(light_dir.normalized(), surface_normal.normalized());
-    diffuse/=light_dir.squaredNorm();
-    color = color + ambient + diffuse;
+
+    float a;
+    Vector3f eye_dir = eye_pos_ - shade_point;
+    Vector3f half = (light_dir.normalized() + eye_dir.normalized()) / 2;
+    Array3f specular = 1 * ks_ * point_light_intensity * \
+        std::pow(non_negative_dot(half.normalized(), surface_normal.normalized()), specular_power_);
+
+    color = color + ambient + diffuse + specular;
     //如果大于1则clip
     color = (color >= 1.0f).select(Array3f::Ones(),color);
     return color;
