@@ -41,8 +41,9 @@ Rasterizer::Rasterizer(int h, int w): width_(w),height_(h) {
 
 //————————setters
 void Rasterizer::clearBuffer(Buffers buffer_instruct) {
-    //为了方便只能用Implicit，是否会有其他问题？
-    int buf=buffer_instruct;
+    //改-为了方便只能用Implicit，是否会有其他问题？
+    int buf=buffer_instruct.asInt();
+    //编译器将enum转int
     if ((buf & Buffers::Color) == Buffers::Color) {
         frame_buffer_.setConstant(0);
     }
