@@ -50,7 +50,7 @@ void Mesh2D::getTriangles(std::vector<Triangle> &tri_list) {
         };
     }
     else {
-        swapAxis = [](Vector3f& v) {return v;};
+        swapAxis = [](const Vector3f& v) {return v;};
     }
 
     const int len = indices_.size();
