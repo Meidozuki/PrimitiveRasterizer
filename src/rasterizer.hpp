@@ -27,7 +27,7 @@ using Eigen::Vector3f;
 using std::stringstream;
 
 struct Buffers {
-    enum Buffer{
+    enum Buffer : int{
         Color = 1,
         Depth = 2,
     };
@@ -35,7 +35,8 @@ struct Buffers {
     int buffer;
     explicit Buffers(Buffer buf):buffer(buf) {}
     Buffers(int buf):buffer(buf) {}
-    operator int() const {return static_cast<int>(buffer);}
+    inline int asInt() const {return static_cast<int>(buffer);}
+    explicit operator int() const {return static_cast<int>(buffer);}
 };
 
 class Rasterizer {
