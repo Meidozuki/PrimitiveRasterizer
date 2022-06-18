@@ -16,6 +16,7 @@
 typedef std::tuple<float, float, float> Tuple3Df;
 using std::cout, std::endl;
 
+//返回一个lambda表达式
 struct InterpolateFn {
     //alpha -> AB, beta -> AC
     float alpha, beta, gamma;
@@ -27,6 +28,22 @@ struct InterpolateFn {
         return alpha * b + beta * c + gamma * a;
     }
 };
+
+//直接定义一个函数类实例
+static struct {
+    template <typename T>
+    using Vector_t = Eigen::Matrix<T,3,1> ;
+
+    template <typename T>
+    std::tuple<Vector_t<T>,Vector_t<T> > operator() (const std::array<Vector_t<T>, 3> &vertices) {
+        Eigen::Matrix<T, 3, 3> vertex_data;
+        vertex_data << vertices[0], vertices[1], vertices[2];
+
+        Vector_t<T> &&min_v = vertex_data.rowwise().minCoeff();
+        Vector_t<T> &&max_v = vertex_data.rowwise().maxCoeff();
+        return {min_v, max_v};
+    }
+} findBoundary;
 
 
 //————————Constructor
@@ -41,7 +58,6 @@ Rasterizer::Rasterizer(int h, int w): width_(w),height_(h) {
 
 //————————setters
 void Rasterizer::clearBuffer(Buffers buffer_instruct) {
-    //改-为了方便只能用Implicit，是否会有其他问题？
     int buf=buffer_instruct.asInt();
     //编译器将enum转int
     if ((buf & Buffers::Color) == Buffers::Color) {
@@ -131,11 +147,15 @@ void Rasterizer::drawTriangle(const Triangle &tri, const array<Vector3f, 3> &sha
     //TODO: 处理edge情况
     Eigen::Matrix3f vertex_data;
     vertex_data << tri.vertex_[0], tri.vertex_[1], tri.vertex_[2];
-
-    Vector3f &&min_v = vertex_data.rowwise().minCoeff();
+//
+//    Vector3f &&min_v = vertex_data.rowwise().minCoeff();
+//    int infX = std::floor(min_v.x()), infY = std::floor(min_v.y());
+//    Vector3f &&max_v = vertex_data.rowwise().maxCoeff();
+//    int supX = std::floor(max_v.x()), supY = std::floor(max_v.y());
+    auto [min_v,max_v] = findBoundary(tri.vertex_);
     int infX = std::floor(min_v.x()), infY = std::floor(min_v.y());
-    Vector3f &&max_v = vertex_data.rowwise().maxCoeff();
     int supX = std::floor(max_v.x()), supY = std::floor(max_v.y());
+
 #if GENERAL_DEBUG_MODE
     if (infX < 0 || infY < 0 || supX >= width_ || supY >= height_) {
         std::cerr << "drawTriangle: X or Y out of range,consider clip" << std::endl;
@@ -151,7 +171,7 @@ void Rasterizer::drawTriangle(const Triangle &tri, const array<Vector3f, 3> &sha
 
     for (int x = infX;x < supX;++x) {
         for (int y = infY;y < supY;++y) {
-            //若使用C++17结构化绑定，clang会在下面的lambda表达式报错，因此用C++11版本
+            //若使用C++17结构化绑定，clang会在下面的lambda表达式报warning，因此用C++11版本
             float alpha, beta, gamma, det;
             std::tie(alpha, beta, det) = computeBarycentric2D(Vector3f(x,y,0.0), tri.vertex_);
             if (std::abs(det) <= 1e-5) {
@@ -198,48 +218,53 @@ void Rasterizer::draw(const std::vector<Triangle> &triangles) {
 
     shader_.eye_pos_ = getShadeEyePos();
 
-    Eigen::Matrix4f mv  = view_ * model_;
     Eigen::Matrix4f mvp = projection_ * view_ * model_;
 //    std::cout << "mvp" << mvp << std::endl;
 
+//    std::vector<Triangle> regular_tri;
+
     for (const auto& tri : triangles) {
-        //之后换成指针
         Triangle new_tri = tri;
 
         //设置顶点
         std::array<Eigen::Vector4f, 3> vertex;
 
+        //转换到投影坐标系下
         for (int i=0;i < 3;++i) {
             vertex[i] = Vector3to4(tri.vertex_[i]);
 
             Eigen::Vector4f new_vertex = mvp * vertex[i];
             new_vertex /= new_vertex.w();
-//            std::cout << "point " << new_vertex << std::endl;
-            new_vertex.x() = 0.5 * width_ * (1.0f + new_vertex.x());
-            new_vertex.y() = 0.5 * height_ * (1.0f + new_vertex.y());
-            new_vertex.z() = new_vertex.z() * z_scale + z_affine;
 
             new_tri.vertex_[i] = new_vertex.head(3);
         }
 
-        //寻找shading point
-//        std::array<Vector3f, 3> shade_point;
-//        for (int i=0;i < 3;++i) {
-//            shade_point[i] = (mv * vertex[i]).head(3);
-//        }
-//        std::cout << tri.vertex_[0] << std::endl;
-//        std::cout << shade_point[0] << std::endl;
+        //假设已经规范化，裁剪
+        auto [min_v,max_v] = findBoundary(new_tri.vertex_);
+        float xmin = min_v.x(), ymin =min_v.y();
+        float xmax = max_v.x(), ymax =max_v.y();
 
-        //设置normal
-//        Eigen::Matrix4f inv_trans = mv.reverse().transpose();
-//        Eigen::Vector4f n[3];
+        //简单clip
+        if (xmin > 1.0 || xmax < -1.0 || ymin > 1.0 || ymax < -1.0) {
+            continue;
+        }
+
+        //在世界坐标系下shading
         for (int i=0;i < 3;++i) {
-//            n[i] = inv_trans * Vector3to4(tri.normal_[i],0);
-//            new_tri.normal_[i] = n[i].head(3);
             new_tri.normal_[i] = tri.normal_[i];
         }
 
+        for (int i=0;i < 3;++i) {
+            //视口变换
+            auto& vert = new_tri.vertex_[i];
+            vert.x() = 0.5 * width_ * (1.0f + vert.x());
+            vert.y() = 0.5 * height_ * (1.0f + vert.y());
+            vert.z() = vert.z() * z_scale + z_affine;
+        }
 
+//        regular_tri.emplace_back(std::move(new_tri));
+
+        //需要更改shading坐标系才能按照标准pipeline
         drawTriangle(new_tri, tri.vertex_);
     }
 

@@ -32,11 +32,11 @@ struct Buffers {
         Depth = 2,
     };
 
-    int buffer;
-    explicit Buffers(Buffer buf):buffer(buf) {}
-    Buffers(int buf):buffer(buf) {}
-    inline int asInt() const {return static_cast<int>(buffer);}
-    explicit operator int() const {return static_cast<int>(buffer);}
+    int buffer_;
+    explicit Buffers(Buffer buf):buffer_(buf) {}
+    Buffers(int buf):buffer_(buf) {}
+    inline int asInt() const {return static_cast<int>(buffer_);}
+    explicit operator int() const {return static_cast<int>(buffer_);}
 };
 
 class Rasterizer {
