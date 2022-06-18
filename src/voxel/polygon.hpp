@@ -27,6 +27,7 @@ public:
     std::vector<Eigen::Vector3i> indices_vn_;
 
     void getTriangles(std::vector<Triangle> &tri_list);
+    virtual int sign() = 0; //定义为抽象类，暂时未找到好的函数
 };
 
 class Mesh2D : public Mesh {
@@ -38,6 +39,7 @@ public:
     Mesh2D(): z_(1.0) {aligned_axis = axisZ;}
 
     void getTriangles(std::vector<Triangle> &tri_list);
+    int sign() override {return 2;}
 };
 
 class Rectangle : public Mesh2D {
@@ -49,6 +51,7 @@ public:
 class Mesh3D : public Mesh2D{
     //考虑调用矩形绘制立方体
     ;
+    int sign() override {return 3;}
 };
 
 class Cube : public Mesh3D {
