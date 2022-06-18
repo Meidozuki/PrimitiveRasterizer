@@ -36,6 +36,25 @@ int main() {
 
     std::vector<Triangle> triangle_list;
 
+    ObjLoader obj_loader;
+    obj_loader.loadObjFile("../cow.obj");
+
+    auto& vertices=obj_loader.vertices_buf;
+    for (Eigen::Vector3i &index: obj_loader.indices_buf) {
+        Triangle tri;
+        for (int i=0;i < 3;++i) {
+            int idx=index[i];
+            auto vert=vertices[idx];
+            tri.setVertex(i, vert);
+        }
+        float col=tanh(tri.vertex_[0].z())/2+0.5;
+        col=1;
+        tri.setColor(0,{0,0,col});
+        tri.setColor(1,{0,0,col});
+        tri.setColor(2,{0,0,col});
+        triangle_list.push_back(std::move(tri));
+    }
+    raster.draw(triangle_list);
 
     int key =0;
     while (key != 27) {
@@ -46,8 +65,9 @@ int main() {
         raster.setProjection(GetProjectionMatrix(60, 1, 0.1, 10));
 
 
+//        test_triangle();
+//        test_cone();
 
-        triangle_list.clear();
 
         float startX=-0.2,startY=0.2,startZ=-0.2, cube_size=0.12;
         int n_cubes=5;
@@ -66,12 +86,8 @@ int main() {
 
         voxel::Mesh::setMeshColor({0,0.5,0.7});
 
-        voxel::Cone cone(16,{0.5,0,0.2},0.15,1.5);
-        cone.getTriangles(triangle_list);
-        voxel::Cone cone2(16,{0.5,0,0.2},0.15,-1.5);
-        cone2.getTriangles(triangle_list);
-
         raster.draw(triangle_list);
+        triangle_list.clear();
 
 
         cv::Mat image(height,width,CV_32FC3);
@@ -80,7 +96,7 @@ int main() {
         cv::flip(image,image,0); //竖直翻转
         cv::imshow("image",image);
 
-        key = cv::waitKey(100);
+        key = cv::waitKey(0);
         angle += 10;
     }
 
