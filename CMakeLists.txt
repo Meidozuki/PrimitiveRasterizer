@@ -9,7 +9,6 @@ message(STATUS "OS: ${CMAKE_SYSTEM}")
 
 option(Raster_ObjLoader_primitive OFF "使用自己写的objloader而不是调用现成")
 
-
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")
     #eigen package
     include_directories(3Party/win/eigen/include/eigen3)
