@@ -1,0 +1,17 @@
+queries:
+  exclude: "${LGTM_SRC}/3Party"
+extraction:
+  cpp:
+    prepare:
+      packages:
+        - "gcc"
+        - "g++"
+        - "cmake"
+        - "libeigen3-dev"
+    configure:
+      command: "mkdir ${LGTM_SRC}/build"
+    index:
+      build_command:
+        - "cd ${LGTM_SRC}/build"
+        - "cmake .."
+        - "cmake --build ."

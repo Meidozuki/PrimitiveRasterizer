@@ -12,4 +12,7 @@ _deps
 
 .idea
 cmake-build-debug
-3Party
+linux-build
+3Party/*/
+!3Party/linux-build/
+lgtm.template.yml
