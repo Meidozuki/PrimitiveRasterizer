@@ -1,4 +1,6 @@
 # PrimitiveRasterizer  
+[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/Meidozuki/PrimitiveRasterizer.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Meidozuki/PrimitiveRasterizer/context:cpp)
+
 ## 效果预览  
 ![image](./markdown_img/phong-shading.gif)
 

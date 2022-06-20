@@ -1,20 +1,30 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.16)
 project(Rasterizer)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS -O1)
+
+message(STATUS "OS: ${CMAKE_SYSTEM}")
 
 #configure_file(header_config.h.in header_config.h)
 
 option(Raster_ObjLoader_primitive OFF "使用自己写的objloader而不是调用现成")
 
-#eigen package
-include_directories(3Party/eigen/include/eigen3)
 
-#opencv package
-option(OpenCV_STATIC OFF)
-find_package(OpenCV REQUIRED
-        PATHS 3Party/opencv)
-include_directories(3Party/opencv/include)
+if (CMAKE_SYSTEM_NAME MATCHES "Windows")
+    #eigen package
+    include_directories(3Party/win/eigen/include/eigen3)
+    #opencv package
+    find_package(OpenCV REQUIRED
+            PATHS 3Party/win/opencv)
+elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
+#    include_directories(3Party/win/eigen/include/eigen3)
+    find_package(eigen3)
+    include_directories(/usr/include/eigen3/)
+    find_package(OpenCV 4.5.0 REQUIRED
+            PATHS ${CMAKE_SOURCE_DIR}/3Party/linux-build/opencv-install)
+endif()
+message(${OpenCV_VERSION})
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 include_directories(src)
 file(GLOB SRC_CPP
@@ -30,10 +40,11 @@ target_link_libraries(Rasterizer ${OpenCV_LIBS})
 #        )
 
 #check opencv dll
+set(OpenCV_STATIC ON)
 file(GLOB DLLS_
         ${PROJECT_BINARY_DIR}/*.dll)
 list(LENGTH DLLS_ DLLS_num)
-if(DLLS_num EQUAL 0)
+if(NOT OpenCV_STATIC AND DLLS_num EQUAL 0)
     message(WARNING "The exe needs opencv dlls but none were found")
 
     #auto copy opencv(world) dll
@@ -57,5 +68,5 @@ endif()
 unset(DLLS_num)
 unset(DLLS_)
 
-add_subdirectory(src)
+#add_subdirectory(src)
 #add_subdirectory(googletest)

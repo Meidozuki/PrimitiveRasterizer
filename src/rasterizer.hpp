@@ -64,10 +64,10 @@ public:
     Rasterizer(): Rasterizer(0,0) {};
 
     //getters
-    const int width() const {return width_;}
-    const int height() const {return height_;}
+    int width() const {return width_;}
+    int height() const {return height_;}
     const auto & framebuffer() {return frame_buffer_;}
-    const float getZBuffer(int x,int y) {return z_buffer_(y,x);}
+    float getZBuffer(int x,int y) {return z_buffer_(y,x);}
     std::tuple<int, int> get_framebuffer_shape() {
         return {frame_buffer_.dimension(0),frame_buffer_.dimension(1)};
     }
