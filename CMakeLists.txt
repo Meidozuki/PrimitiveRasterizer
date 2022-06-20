@@ -17,9 +17,10 @@ if (CMAKE_SYSTEM_NAME MATCHES "Windows")
     find_package(OpenCV REQUIRED
             PATHS 3Party/win/opencv)
 elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
+#    include_directories(3Party/win/eigen/include/eigen3)
     find_package(eigen3)
     include_directories(/usr/include/eigen3/)
-    find_package(OpenCV 4.5.5 REQUIRED
+    find_package(OpenCV 4.5.0 REQUIRED
             PATHS ${CMAKE_SOURCE_DIR}/3Party/linux-build/opencv-install)
 endif()
 message(${OpenCV_VERSION})

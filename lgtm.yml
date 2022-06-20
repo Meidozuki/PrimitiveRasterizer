@@ -9,9 +9,12 @@ extraction:
         - "cmake"
         - "libeigen3-dev"
     configure:
-      command: "mkdir ${LGTM_SRC}/build"
+      command:
+        - "mkdir ${LGTM_SRC}/build"
+        - "cd ${LGTM_SRC}/3Party/linux-build"
+        - "tar -xzf opencv.tar"
     index:
       build_command:
         - "cd ${LGTM_SRC}/build"
         - "cmake .."
-        - "cmake --build ."
+        - "cmake --build . -j2"
