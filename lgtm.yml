@@ -18,3 +18,5 @@ extraction:
         - "cd ${LGTM_SRC}/build"
         - "cmake .."
         - "cmake --build . -j2"
+        - "cd .."
+        - "rm -r 3Party/*"
