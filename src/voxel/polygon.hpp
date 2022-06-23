@@ -38,6 +38,7 @@ public:
 
     Mesh2D(): z_(1.0) {aligned_axis = axisZ;}
 
+    void setAlignedAxis(AlignedAxis axis) {aligned_axis = axis;}
     void getTriangles(std::vector<Triangle> &tri_list);
     int sign() override {return 2;}
 };
@@ -46,6 +47,12 @@ class Rectangle : public Mesh2D {
 public:
     Rectangle();
     Rectangle(float top, float left, float bottom, float right, float z = 0);
+};
+
+class Circle : public Mesh2D {
+public:
+    Circle();
+    Circle(float center_x,float center_y,float radius,int edges=16,float z=0);
 };
 
 class Mesh3D : public Mesh2D{

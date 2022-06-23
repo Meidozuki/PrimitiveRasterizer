@@ -20,11 +20,12 @@
   #define GENERAL_DEBUG_MODE 1
 #endif
 
-typedef float DType;
+using DType = float;
 using Eigen::Tensor;
 using Eigen::Dynamic;
 using Eigen::Vector3f;
 using std::stringstream;
+using std::array;
 
 struct Buffers {
     enum Buffer : int{
@@ -43,11 +44,11 @@ class Rasterizer {
 public:
     enum class DrawingMode {Wireframe, Triangle};
 
-    typedef int PositionIndex;
-    typedef int IndicesIndex;
-    typedef int ColorIndex;
+    using PositionIndex = int;
+    using IndicesIndex = int;
+    using ColorIndex = int;
 
-    typedef float ZBufferType;
+    using ZBufferType = float;
 
 private:
     Tensor<DType, 3> frame_buffer_; // 3-dim tensor
