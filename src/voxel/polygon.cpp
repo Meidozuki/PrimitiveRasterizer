@@ -26,7 +26,7 @@ void Mesh::getTriangles(std::vector<Triangle> &tri_list) {
         if (!vertex_normal_.empty() && !indices_vn_.empty()) {
             for (int j=0;j < 3;++j) {
                 int vn_idx = indices_vn_.at(i)[j];
-                tri.normal_[j]= vertex_normal_.at(vn_idx);
+                tri.setNormal(j, vertex_normal_.at(vn_idx));
             }
         }
 
@@ -69,7 +69,7 @@ void Mesh2D::getTriangles(std::vector<Triangle> &tri_list) {
                 int vn_idx = indices_vn_.at(i)[j];
                 //更改normal
                 Vector3f normal = vertex_normal_.at(vn_idx);
-                tri.normal_[j]= swapAxis(normal);
+                tri.setNormal(j, swapAxis(normal));
             }
         }
 
