@@ -13,7 +13,7 @@
 #include "straight_line.hpp"
 #include "basic_matrix.hpp"
 
-typedef std::tuple<float, float, float> Tuple3Df;
+using Tuple3Df = std::tuple<float, float, float>;
 using std::cout, std::endl;
 
 //返回一个lambda表达式
@@ -146,13 +146,13 @@ bool insideTriangle(int x, int y, const std::array<Vector3f, 3> &vertices) {
 void Rasterizer::drawTriangle(const Triangle &tri, const array<Vector3f, 3> &shade_point) {
     //TODO: 处理edge情况
     Eigen::Matrix3f vertex_data;
-    vertex_data << tri.vertex_[0], tri.vertex_[1], tri.vertex_[2];
+    vertex_data << tri.vertex(0), tri.vertex(1), tri.vertex(2);
 //
 //    Vector3f &&min_v = vertex_data.rowwise().minCoeff();
 //    int infX = std::floor(min_v.x()), infY = std::floor(min_v.y());
 //    Vector3f &&max_v = vertex_data.rowwise().maxCoeff();
 //    int supX = std::floor(max_v.x()), supY = std::floor(max_v.y());
-    auto [min_v,max_v] = findBoundary(tri.vertex_);
+    auto [min_v,max_v] = findBoundary(tri.getVertices());
     int infX = std::floor(min_v.x()), infY = std::floor(min_v.y());
     int supX = std::floor(max_v.x()), supY = std::floor(max_v.y());
 
@@ -173,7 +173,7 @@ void Rasterizer::drawTriangle(const Triangle &tri, const array<Vector3f, 3> &sha
         for (int y = infY;y < supY;++y) {
             //若使用C++17结构化绑定，clang会在下面的lambda表达式报warning，因此用C++11版本
             float alpha, beta, gamma, det;
-            std::tie(alpha, beta, det) = computeBarycentric2D(Vector3f(x,y,0.0), tri.vertex_);
+            std::tie(alpha, beta, det) = computeBarycentric2D(Vector3f(x,y,0.0), tri.getVertices());
             if (std::abs(det) <= 1e-5) {
                 std::cerr << "drawing a line-shape triangle.\n";
                 return;
@@ -194,12 +194,12 @@ void Rasterizer::drawTriangle(const Triangle &tri, const array<Vector3f, 3> &sha
 
             setDepth(x,y,z);
 
-            ColorType interpolated_color = interpolate(tri.getColor(0),tri.getColor(1),tri.getColor(2));
+            ColorType interpolated_color = interpolate(tri.color(0), tri.color(1), tri.color(2));
 
 
             //世界坐标系下的xyz
             Vector3f interpolated_pos = interpolate(shade_point[0], shade_point[1], shade_point[2]);
-            Vector3f normal = interpolate(tri.normal_[0],tri.normal_[1],tri.normal_[2]);
+            Vector3f normal = interpolate(tri.normal(0),tri.normal(1),tri.normal(2));
 
 
             auto new_color = shader_.shadeColor(interpolated_pos, normal, interpolated_color);
@@ -231,16 +231,16 @@ void Rasterizer::draw(const std::vector<Triangle> &triangles) {
 
         //转换到投影坐标系下
         for (int i=0;i < 3;++i) {
-            vertex[i] = Vector3to4(tri.vertex_[i]);
+            vertex[i] = Vector3to4(tri.vertex(i));
 
             Eigen::Vector4f new_vertex = mvp * vertex[i];
             new_vertex /= new_vertex.w();
 
-            new_tri.vertex_[i] = new_vertex.head(3);
+            new_tri.setVertex(i, new_vertex.head(3));
         }
 
         //假设已经规范化，裁剪
-        auto [min_v,max_v] = findBoundary(new_tri.vertex_);
+        auto [min_v,max_v] = findBoundary(new_tri.getVertices());
         float xmin = min_v.x(), ymin =min_v.y();
         float xmax = max_v.x(), ymax =max_v.y();
 
@@ -251,21 +251,22 @@ void Rasterizer::draw(const std::vector<Triangle> &triangles) {
 
         //在世界坐标系下shading
         for (int i=0;i < 3;++i) {
-            new_tri.normal_[i] = tri.normal_[i];
+            new_tri.setNormal(i, tri.normal(i));
         }
 
         for (int i=0;i < 3;++i) {
             //视口变换
-            auto& vert = new_tri.vertex_[i];
+            auto vert = new_tri.vertex(i);
             vert.x() = 0.5 * width_ * (1.0f + vert.x());
             vert.y() = 0.5 * height_ * (1.0f + vert.y());
             vert.z() = vert.z() * z_scale + z_affine;
+            new_tri.setVertex(i,vert);
         }
 
 //        regular_tri.emplace_back(std::move(new_tri));
 
         //需要更改shading坐标系才能按照标准pipeline
-        drawTriangle(new_tri, tri.vertex_);
+        drawTriangle(new_tri, tri.getVertices());
     }
 
 }
