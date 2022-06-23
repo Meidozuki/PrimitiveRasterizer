@@ -11,7 +11,7 @@
 #define GENERAL_DEBUG_MODE 1
 #define VERBOSE_DEBUG_MODE 1
 
-typedef const Eigen::Vector3f& Vector3fCRef;
-typedef Eigen::Vector3f ColorType;
+using Vector3fCRef = const Eigen::Vector3f&;
+using ColorType = Eigen::Vector3f;
 
 #endif //MAIN_CPP_SRC_UTIL_DEFINE_HPP_

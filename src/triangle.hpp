@@ -8,26 +8,37 @@
 #include <array>
 #include <memory>
 #include <cassert>
+#include <cinttypes>
+#include <variant>
+#include <optional>
 
 #include <Eigen/Eigen>
 
-using std::array;
 using std::shared_ptr;
 using Eigen::Vector3f;
+using Array3_Vector3f = std::array<Vector3f ,3>;
 
-class Triangle;
-typedef shared_ptr<Triangle> TrianglePtr;
 
 class Triangle {
+private:
+    Array3_Vector3f vertex_;
+    Array3_Vector3f normal_;
+    Array3_Vector3f color_;
 
 public:
-    array<Vector3f ,3> vertex_;
-    array<Vector3f ,3> color_;
-    array<Vector3f ,3> normal_;
 
     Triangle();
 
+    //getters
+    const Vector3f& vertex(int idx) const {return vertex_[idx];}
+    const Vector3f& normal(int idx) const {return normal_[idx];}
+    const Vector3f& color(int idx) const {return color_[idx];}
+
+    auto getVertices() const {return vertex_;}
     void setVertex(int idx, const Vector3f &v) {vertex_[idx] = v;}
+
+    void setNormal(int idx,const Vector3f &normal) {normal_[idx] = normal;}
+    void setNormals(const std::vector<Vector3f> &normal);
     void setColor(int idx, const Vector3f &color) {
         assert(color[0] >= 0 && color[0] <= 1 && \
             color[1] >= 0 && color[1] <= 1 && \
@@ -40,12 +51,8 @@ public:
         setColor(2,color);
     }
 
-    Vector3f getColor(int idx) const {return color_[idx];}
 
-    friend TrianglePtr createTriangle() {
-        TrianglePtr ptr = std::make_shared<Triangle>();
-        return ptr;
-    }
+
 };
 
 

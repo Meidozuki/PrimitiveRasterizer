@@ -26,7 +26,7 @@ void Mesh::getTriangles(std::vector<Triangle> &tri_list) {
         if (!vertex_normal_.empty() && !indices_vn_.empty()) {
             for (int j=0;j < 3;++j) {
                 int vn_idx = indices_vn_.at(i)[j];
-                tri.normal_[j]= vertex_normal_.at(vn_idx);
+                tri.setNormal(j, vertex_normal_.at(vn_idx));
             }
         }
 
@@ -69,7 +69,7 @@ void Mesh2D::getTriangles(std::vector<Triangle> &tri_list) {
                 int vn_idx = indices_vn_.at(i)[j];
                 //更改normal
                 Vector3f normal = vertex_normal_.at(vn_idx);
-                tri.normal_[j]= swapAxis(normal);
+                tri.setNormal(j, swapAxis(normal));
             }
         }
 
@@ -89,6 +89,21 @@ Rectangle::Rectangle(float top, float left, float bottom, float right,
 
     indices_.emplace_back(0,1,2);
     indices_.emplace_back(1,2,3);
+}
+
+Circle::Circle(float center_x, float center_y, float radius, int edges, float z) {
+    //TODO:未过检查
+
+    float step_angle = 2.0 * M_PI / edges;
+    //这里需要统一几何xyz和世界坐标xyz
+    Eigen::Array3f center(center_x,0,center_y);
+
+    for (int i=0;i < edges;++i) {
+        float angle = step_angle * i;
+        Eigen::Array3f vert(std::cos(angle),0,std::sin(angle));
+
+        vertex_pos_.emplace_back(vert * radius + center);
+    }
 }
 
 Cone::Cone(int edges, const Eigen::Array3f& center, float radius, float tip_relative) {
@@ -128,7 +143,7 @@ Cone::Cone(int edges, const Eigen::Array3f& center, float radius, float tip_rela
     }
     //n个侧面
     for (int i=0;i < edges;++i) {
-        int idx_a = i, idx_b = i + 1, idx_vn = i+1;
+        int idx_a = i, idx_b = i + 1, idx_vn = i + 1;
         if (i == 0) idx_a = edges, idx_b = 1;
 
         indices_.emplace_back(0,idx_a,idx_b);
