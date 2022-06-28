@@ -16,3 +16,4 @@ linux-build
 3Party/*
 !3Party/linux-build/
 lgtm.template.yml
+debug_tool/cache

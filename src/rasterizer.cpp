@@ -12,6 +12,8 @@
 #include "util_func.hpp"
 #include "straight_line.hpp"
 #include "basic_matrix.hpp"
+#include "rasterizer_view.hpp"
+#include "../debug_tool/record_img.hpp"
 
 using Tuple3Df = std::tuple<float, float, float>;
 using std::cout, std::endl;
@@ -29,6 +31,7 @@ struct InterpolateFn {
     }
 };
 
+//TODO:去看下汇编这两种是否有性能差异
 //直接定义一个函数类实例
 static struct {
     template <typename T>
@@ -211,6 +214,8 @@ void Rasterizer::drawTriangle(const Triangle &tri, const array<Vector3f, 3> &sha
 
 }
 
+
+#include <sstream>
 void Rasterizer::draw(const std::vector<Triangle> &triangles) {
 
 
@@ -250,6 +255,7 @@ void Rasterizer::draw(const std::vector<Triangle> &triangles) {
         }
 
         //在世界坐标系下shading
+        static int cnt=0;
         for (int i=0;i < 3;++i) {
             new_tri.setNormal(i, tri.normal(i));
         }
@@ -267,6 +273,19 @@ void Rasterizer::draw(const std::vector<Triangle> &triangles) {
 
         //需要更改shading坐标系才能按照标准pipeline
         drawTriangle(new_tri, tri.getVertices());
+
+        if (cnt == 10) {
+            std::cout << std::endl;
+            debug_img::save_img(*this);
+        }
+
+        if (cnt++ > 6) {
+            std::stringstream ss;
+            ss << cnt;
+            show_img(*this, ss.str());
+
+        }
+
     }
 
 }
