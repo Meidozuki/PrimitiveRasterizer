@@ -1,21 +1,21 @@
 cmake_minimum_required(VERSION 3.16)
 project(Rasterizer)
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS -O1)
+#set(CMAKE_CXX_FLAGS -O1)
 
 message(STATUS "OS: ${CMAKE_SYSTEM}")
 
-#configure_file(header_config.h.in header_config.h)
+configure_file(config.h.in config.h)
 
 option(Raster_ObjLoader_primitive OFF "使用自己写的objloader而不是调用现成")
 
 
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")
     #eigen package
-    include_directories(3Party/win/eigen/include/eigen3)
+    include_directories(3Party/eigen/include/eigen3)
     #opencv package
     find_package(OpenCV REQUIRED
-            PATHS 3Party/win/opencv)
+            PATHS 3Party/opencv)
 elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
 #    include_directories(3Party/win/eigen/include/eigen3)
     find_package(eigen3)
@@ -31,13 +31,15 @@ file(GLOB SRC_CPP
         src/*.cpp src/voxel/*.cpp)
 list(APPEND SRC_CPP
         main.cpp)
-add_executable(Rasterizer ${SRC_CPP})
+add_executable(Rasterizer ${SRC_CPP} debug_tool/record_img.cpp debug_tool/record_img.hpp)
+
+add_executable(test test_feature.cpp)
 
 target_link_libraries(Rasterizer ${OpenCV_LIBS})
 
-#target_include_directories(Rasterizer PUBLIC
-#        "${PROJECT_BINARY_DIR}"
-#        )
+target_include_directories(Rasterizer PUBLIC
+        "${PROJECT_BINARY_DIR}"
+        )
 
 #check opencv dll
 set(OpenCV_STATIC ON)
