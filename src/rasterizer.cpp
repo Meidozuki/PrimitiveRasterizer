@@ -156,8 +156,10 @@ void Rasterizer::drawTriangle(const Triangle &tri, const array<Vector3f, 3> &sha
 //    Vector3f &&max_v = vertex_data.rowwise().maxCoeff();
 //    int supX = std::floor(max_v.x()), supY = std::floor(max_v.y());
     auto [min_v,max_v] = findBoundary(tri.getVertices());
-    int infX = std::floor(min_v.x()), infY = std::floor(min_v.y());
-    int supX = std::floor(max_v.x()), supY = std::floor(max_v.y());
+    int infX = std::floor(min_v.x()),
+        infY = std::floor(min_v.y());
+    int supX = std::ceil(max_v.x()),
+        supY = std::ceil(max_v.y());
 
 #if GENERAL_DEBUG_MODE
     if (infX < 0 || infY < 0 || supX >= width_ || supY >= height_) {
@@ -209,15 +211,14 @@ void Rasterizer::drawTriangle(const Triangle &tri, const array<Vector3f, 3> &sha
 //            std::cout << "color " << interpolated_color.transpose() << " after " << new_color.transpose() << std::endl;
 
             setPixel(x,y,new_color);
-        }
-    }
+        } //endfor y
+    } //endfor x
 
 }
 
 
 #include <sstream>
 void Rasterizer::draw(const std::vector<Triangle> &triangles) {
-
 
     float z_scale = (50 - 0.1) / 2.0, z_affine = (50 + 0.1) / 2.0;
 
@@ -271,20 +272,14 @@ void Rasterizer::draw(const std::vector<Triangle> &triangles) {
 
 //        regular_tri.emplace_back(std::move(new_tri));
 
-        //需要更改shading坐标系才能按照标准pipeline
-        drawTriangle(new_tri, tri.getVertices());
 
         if (cnt == 10) {
             std::cout << std::endl;
-            debug_img::save_img(*this);
+//            debug_img::save_img(*this);
         }
+        //需要更改shading坐标系才能按照标准pipeline
+        drawTriangle(new_tri, tri.getVertices());
 
-        if (cnt++ > 6) {
-            std::stringstream ss;
-            ss << cnt;
-            show_img(*this, ss.str());
-
-        }
 
     }
 
