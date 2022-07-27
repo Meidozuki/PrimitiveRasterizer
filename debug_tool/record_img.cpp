@@ -26,11 +26,12 @@ namespace debug_img {
         if (!filename.has_value()) {
             stringstream ss;
             ss << auto_cnt++;
-            filename = std::string(PROJ_SRC_DIR) + "/debug_tool/cache/" + ss.str() + ".tiff";
+            filename = ss.str();
         }
 
+        auto fname = std::string(PROJ_SRC_DIR) + "/debug_tool/cache/" + filename.value() + ".tiff";
         cv::Mat image = eigen2cv_(r);
-        cv::imwrite(filename.value(),image);
+        cv::imwrite(fname,image);
     }
 
     void clear_dir(std::string path) {
