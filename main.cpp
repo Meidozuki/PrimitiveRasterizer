@@ -58,8 +58,8 @@ int main() {
 //    }
 //    raster.draw(triangle_list);
 
-    float startX=-0.2,startY=0.2,startZ=-0.2, cube_size=0.5;
-    int n_cubes=1;
+    float startX=-0.2,startY=0.2,startZ=-0.2, cube_size=0.1;
+    int n_cubes=5;
 
     for (int i=0;i < n_cubes;++i) {
         for (int j=0;j < n_cubes;++j) {
@@ -75,7 +75,7 @@ int main() {
 
 
     int key =0;
-    while (key != 27 && key != -1 && key != '\b') {
+    while (key != 27 && key != '\b') {
         raster.clearBuffer(Buffers::Color | Buffers::Depth);
 
         raster.setModel(getModelMatrix(angle));
@@ -87,21 +87,13 @@ int main() {
 //        test_cone();
 
 
-
-
         raster.draw(triangle_list);
 //        triangle_list.clear();
 
-//
-//        cv::Mat image(height,width,CV_32FC3);
-//        cv::eigen2cv(raster.framebuffer(),image);
-//        cv::cvtColor(image,image,cv::COLOR_BGR2RGB);
-//        cv::flip(image,image,0); //竖直翻转
-//        cv::imshow("image",image);
         show_img(raster);
 
-        key = cv::waitKey(0);
-        cout << "key "  << key << endl;
+        key = cv::waitKey(100);
+        cout << "key " << key << endl;
         angle += 10;
     }
 
