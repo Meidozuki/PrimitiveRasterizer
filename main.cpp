@@ -11,6 +11,7 @@
 
 #include "basic_matrix.hpp"
 #include "rasterizer.hpp"
+#include "rasterizer_view.hpp"
 #include "obj_loader.hpp"
 #include "voxel/polygon.hpp"
 
@@ -29,9 +30,9 @@ int main() {
     const int height=600,width=800;
     Rasterizer raster(height,width);
 
-    float angle = 10;
+    float angle = 140;
     raster.setModel(getModelMatrix(angle));
-    raster.setView(getViewMatrix({0,1.5,3}));
+    raster.setEyePos({0,1,3});
     raster.setProjection(GetProjectionMatrix(60, 1, 0.1, 10));
 
     std::vector<Triangle> triangle_list;
@@ -39,26 +40,26 @@ int main() {
     ObjLoader obj_loader;
     obj_loader.loadObjFile("../cow.obj");
 
-    auto& vertices=obj_loader.vertices_buf;
-    for (Eigen::Vector3i &index: obj_loader.indices_buf) {
-        Triangle tri;
-        for (int i=0;i < 3;++i) {
-            int idx=index[i]-1;
-            auto vert=vertices[idx];
-            tri.setVertex(i, vert);
-        }
-        float col=tanh(tri.vertex(0).z())/2+0.5;
-        col=1;
-        tri.setColor(0,{0,1,col});
-        tri.setColor(1,{0,1,col});
-        tri.setColor(2,{0,1,col});
-        tri.setNormals({});
-        triangle_list.push_back(std::move(tri));
-    }
+//    auto& vertices=obj_loader.vertices_buf;
+//    for (Eigen::Vector3i &index: obj_loader.indices_buf) {
+//        Triangle tri;
+//        for (int i=0;i < 3;++i) {
+//            int idx=index[i]-1;
+//            auto vert=vertices[idx];
+//            tri.setVertex(i, vert);
+//        }
+//        float col=tanh(tri.vertex(0).z())/2+0.5;
+//        col=1;
+//        tri.setColor(0,{0,1,col});
+//        tri.setColor(1,{0,1,col});
+//        tri.setColor(2,{0,1,col});
+//        tri.setNormals({});
+//        triangle_list.push_back(std::move(tri));
+//    }
 //    raster.draw(triangle_list);
 
-    float startX=-0.2,startY=0.2,startZ=-0.2, cube_size=0.12;
-    int n_cubes=5;
+    float startX=-0.2,startY=0.2,startZ=-0.2, cube_size=0.5;
+    int n_cubes=1;
 
     for (int i=0;i < n_cubes;++i) {
         for (int j=0;j < n_cubes;++j) {
@@ -74,7 +75,7 @@ int main() {
 
 
     int key =0;
-    while (key != 27) {
+    while (key != 27 && key != -1 && key != '\b') {
         raster.clearBuffer(Buffers::Color | Buffers::Depth);
 
         raster.setModel(getModelMatrix(angle));
@@ -87,19 +88,20 @@ int main() {
 
 
 
-        voxel::Mesh::setMeshColor({0,0.5,0.7});
 
         raster.draw(triangle_list);
 //        triangle_list.clear();
 
+//
+//        cv::Mat image(height,width,CV_32FC3);
+//        cv::eigen2cv(raster.framebuffer(),image);
+//        cv::cvtColor(image,image,cv::COLOR_BGR2RGB);
+//        cv::flip(image,image,0); //竖直翻转
+//        cv::imshow("image",image);
+        show_img(raster);
 
-        cv::Mat image(height,width,CV_32FC3);
-        cv::eigen2cv(raster.framebuffer(),image);
-        cv::cvtColor(image,image,cv::COLOR_BGR2RGB);
-        cv::flip(image,image,0); //竖直翻转
-        cv::imshow("image",image);
-
-        key = cv::waitKey(200);
+        key = cv::waitKey(0);
+        cout << "key "  << key << endl;
         angle += 10;
     }
 
