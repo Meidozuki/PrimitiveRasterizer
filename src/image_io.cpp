@@ -2,35 +2,53 @@
 // Created by user on 2022/7/26.
 //
 
-#include "record_img.hpp"
+#include "image_io.hpp"
 
 #include <iostream>
 #include <vector>
 #include <sstream>
 
-#include <Eigen/Core>
-#include <opencv2/core/eigen.hpp>
-#include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/highgui.hpp>
 
 #include "config.h"
 #include "rasterizer.hpp"
-#include "rasterizer_view.hpp"
 
 namespace filesystem = std::filesystem;
 
-namespace debug_img {
+namespace imageio {
     short int auto_cnt = 0;
+
+    cv::Mat eigen2cv_(Rasterizer &raster) {
+        cv::Mat image(raster.height(), raster.width(), CV_32FC3);
+        cv::eigen2cv(raster.framebuffer(),image);
+        cv::cvtColor(image,image,cv::COLOR_BGR2RGB);
+        cv::flip(image,image,0); //竖直翻转
+        return image;
+    }
+
+    void show_img(Rasterizer &raster, const std::string &title) {
+        cv::Mat image = eigen2cv_(raster);
+//        image.convertTo(image,CV_8UC3);
+        cv::imshow(title,image);
+    }
 
     void save_img(Rasterizer &r,std::optional<std::string> filename) {
         if (!filename.has_value()) {
             stringstream ss;
             ss << auto_cnt++;
             filename = ss.str();
+            filename = std::string(PROJ_SRC_DIR) + "/debug_tool/cache/" + filename.value() + ".tiff";
         }
 
-        auto fname = std::string(PROJ_SRC_DIR) + "/debug_tool/cache/" + filename.value() + ".tiff";
+        auto &fname = filename.value();
         cv::Mat image = eigen2cv_(r);
+
+        if (!exists(fname + "/..")) {
+            create_directory(fname + "/..");
+        }
+
         cv::imwrite(fname,image);
     }
 

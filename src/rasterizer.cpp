@@ -12,8 +12,7 @@
 #include "util_func.hpp"
 #include "straight_line.hpp"
 #include "basic_matrix.hpp"
-#include "rasterizer_view.hpp"
-#include "../debug_tool/record_img.hpp"
+#include "image_io.hpp"
 
 using Tuple3Df = std::tuple<float, float, float>;
 using std::cout, std::endl;
@@ -273,10 +272,6 @@ void Rasterizer::draw(const std::vector<Triangle> &triangles) {
 //        regular_tri.emplace_back(std::move(new_tri));
 
 
-        if (cnt == 10) {
-            std::cout << std::endl;
-//            debug_img::save_img(*this);
-        }
         //需要更改shading坐标系才能按照标准pipeline
         drawTriangle(new_tri, tri.getVertices());
 
