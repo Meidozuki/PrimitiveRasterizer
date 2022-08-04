@@ -273,10 +273,6 @@ void Rasterizer::draw(const std::vector<Triangle> &triangles) {
 //        regular_tri.emplace_back(std::move(new_tri));
 
 
-        if (cnt == 10) {
-            std::cout << std::endl;
-//            debug_img::save_img(*this);
-        }
         //需要更改shading坐标系才能按照标准pipeline
         drawTriangle(new_tri, tri.getVertices());
 

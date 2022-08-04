@@ -17,7 +17,6 @@ if (CMAKE_SYSTEM_NAME MATCHES "Windows")
     find_package(OpenCV REQUIRED
             PATHS 3Party/opencv)
 elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
-#    include_directories(3Party/win/eigen/include/eigen3)
     find_package(eigen3)
     include_directories(/usr/include/eigen3/)
     find_package(OpenCV 4.5.0 REQUIRED
@@ -28,12 +27,12 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 
 include_directories(src)
 file(GLOB SRC_CPP
-        src/*.cpp src/voxel/*.cpp)
+        src/*.cpp src/voxel/*.cpp src/viewmodel/*.cpp)
 list(APPEND SRC_CPP
         main.cpp)
-add_executable(Rasterizer ${SRC_CPP} debug_tool/record_img.cpp debug_tool/record_img.hpp)
+add_executable(Rasterizer ${SRC_CPP} debug_tool/record_img.cpp)
 
-add_executable(test test_feature.cpp)
+add_executable(test debug_tool/test_feature.cpp)
 
 target_link_libraries(Rasterizer ${OpenCV_LIBS})
 

@@ -14,6 +14,7 @@
 #include "rasterizer_view.hpp"
 #include "obj_loader.hpp"
 #include "voxel/polygon.hpp"
+#include "viewmodel/viewmodel.hpp"
 
 #if 0
   #include "debug_test_example.cpp"
@@ -73,28 +74,30 @@ int main() {
         }
     }
 
+    ViewModel vm;
+    vm.model_=VMModel(raster);
 
     int key =0;
     while (key != 27 && key != '\b') {
-        raster.clearBuffer(Buffers::Color | Buffers::Depth);
+//        raster.clearBuffer(Buffers::Color | Buffers::Depth);
+        vm.model_.clearBuffer(Buffers::Color | Buffers::Depth);
 
-        raster.setModel(getModelMatrix(angle));
-        raster.setEyePos({0,1,3});
-        raster.setProjection(GetProjectionMatrix(60, 1, 0.1, 10));
 
 
 //        test_triangle();
 //        test_cone();
 
 
-        raster.draw(triangle_list);
-//        triangle_list.clear();
-
-        show_img(raster);
+//        raster.draw(triangle_list);
+//        show_img(raster);
+        vm.model_.draw(triangle_list);
+        show_img(vm.model_);
 
         key = cv::waitKey(100);
         cout << "key " << key << endl;
-        angle += 10;
+        vm.triggerFunc("eye_left");
+//        angle += 10;
+
     }
 
     return 0;
