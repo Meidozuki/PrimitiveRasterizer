@@ -23,8 +23,10 @@ public:
     explicit VMModel(const Rasterizer &r): Rasterizer(r) {}
 
     void registerFunctionDict(float delta);
+    void saveImage();
 private:
     void moveEye(DType dx,DType dy,DType dz);
+    void modelRotate(DType theta);
 };
 
 #endif //RASTERIZER_MODEL_INTERFACE_HPP

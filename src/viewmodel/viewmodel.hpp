@@ -16,6 +16,7 @@ using std::string_view;
 #include "./model_interface.hpp"
 
 //using CommandFunc = std::function<void(std::any &&)>;
+//using CommandFuncWithReturn = std::function<std::any(void)>;
 using CommandFunc = std::function<void(void)>;
 using Index = std::unordered_map<std::string_view, CommandFunc>;
 

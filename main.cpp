@@ -6,12 +6,10 @@
 #include <Eigen/Core>
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/core.hpp>
-#include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 
-#include "basic_matrix.hpp"
 #include "rasterizer.hpp"
-#include "rasterizer_view.hpp"
+#include "image_io.hpp"
 #include "obj_loader.hpp"
 #include "voxel/polygon.hpp"
 #include "viewmodel/viewmodel.hpp"
@@ -27,14 +25,6 @@ int main() {
     std::default_random_engine e;
     std::uniform_real_distribution<float> u(0,1);
 
-
-    const int height=600,width=800;
-    Rasterizer raster(height,width);
-
-    float angle = 140;
-    raster.setModel(getModelMatrix(angle));
-    raster.setEyePos({0,1,3});
-    raster.setProjection(GetProjectionMatrix(60, 1, 0.1, 10));
 
     std::vector<Triangle> triangle_list;
 
@@ -59,6 +49,7 @@ int main() {
 //    }
 //    raster.draw(triangle_list);
 
+    {
     float startX=-0.2,startY=0.2,startZ=-0.2, cube_size=0.1;
     int n_cubes=5;
 
@@ -73,9 +64,9 @@ int main() {
             cube.getTriangles(triangle_list);
         }
     }
+    }
 
     ViewModel vm;
-    vm.model_=VMModel(raster);
 
     int key =0;
     while (key != 27 && key != '\b') {
@@ -91,14 +82,15 @@ int main() {
 //        raster.draw(triangle_list);
 //        show_img(raster);
         vm.model_.draw(triangle_list);
-        show_img(vm.model_);
+        imageio::show_img(vm.model_);
 
         key = cv::waitKey(100);
-        cout << "key " << key << endl;
-        vm.triggerFunc("eye_left");
-//        angle += 10;
+//        cout << "key " << key << endl;
+        vm.triggerFunc("angle_plus");
 
     }
+
+    vm.model_.saveImage();
 
     return 0;
 }

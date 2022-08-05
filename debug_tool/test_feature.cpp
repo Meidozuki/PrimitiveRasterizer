@@ -3,9 +3,9 @@
 //
 
 #include <iostream>
-class A ;
+#include <any>
 
-void f(A& obj,int arg);
+void f(std::any a) {}
 
 int main (void) {
     ;

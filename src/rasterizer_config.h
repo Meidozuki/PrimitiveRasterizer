@@ -7,6 +7,7 @@
 
 namespace RasterizerConfig {
     const int height=600,width=800;
+    float model_angle = 140;
 }
 
 #endif //RASTERIZER_RASTERIZER_CONFIG_H

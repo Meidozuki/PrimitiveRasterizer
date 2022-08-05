@@ -30,7 +30,7 @@ file(GLOB SRC_CPP
         src/*.cpp src/voxel/*.cpp src/viewmodel/*.cpp)
 list(APPEND SRC_CPP
         main.cpp)
-add_executable(Rasterizer ${SRC_CPP} debug_tool/record_img.cpp)
+add_executable(Rasterizer ${SRC_CPP} )
 
 add_executable(test debug_tool/test_feature.cpp)
 

@@ -12,8 +12,7 @@
 #include "util_func.hpp"
 #include "straight_line.hpp"
 #include "basic_matrix.hpp"
-#include "rasterizer_view.hpp"
-#include "../debug_tool/record_img.hpp"
+#include "image_io.hpp"
 
 using Tuple3Df = std::tuple<float, float, float>;
 using std::cout, std::endl;
