@@ -50,7 +50,7 @@ public:
 
     using ZBufferType = float;
 
-private:
+protected:
     Tensor<DType, 3> frame_buffer_; // 3-dim tensor
     Eigen::Matrix<ZBufferType, Dynamic, Dynamic> z_buffer_;
 
