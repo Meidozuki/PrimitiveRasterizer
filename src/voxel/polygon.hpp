@@ -21,17 +21,27 @@ namespace voxel {
         static ColorType mesh_color;
         static void setMeshColor(const Vector3f &color) {mesh_color = color;}
 
+    protected:
+        Mesh() = default; //访问控制，不允许直接初始化
+
         std::vector<Eigen::Vector3f> vertex_pos_;
         std::vector<Eigen::Vector3i> indices_;
         std::vector<Eigen::Vector3f> vertex_normal_;
         std::vector<Eigen::Vector3i> indices_vn_;
 
-        void getTriangles(std::vector<Triangle> &tri_list);
         virtual int sign() = 0; //定义为抽象类，暂时未找到好的函数
+    private:
+        //定义接口，实现静多态
+        void getTriangles(std::vector<Triangle> &tri_list);
     };
+    //static member
+    //需要C++17
+    inline ColorType Mesh::mesh_color = Vector3f(1,1,1);
 
-    class Mesh2D : public Mesh {
+    class Mesh2D : protected Mesh {
     public:
+        using Mesh::vertex_pos_, Mesh::indices_, Mesh::vertex_normal_, Mesh::indices_vn_;
+
         enum AlignedAxis {axisX,axisY,axisZ};
         AlignedAxis aligned_axis;
         float z_;

@@ -1,6 +1,6 @@
-# PrimitiveRasterizer  
-[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/Meidozuki/PrimitiveRasterizer.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Meidozuki/PrimitiveRasterizer/context:cpp)
+# PrimitiveRasterizer
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
+[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/Meidozuki/PrimitiveRasterizer.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Meidozuki/PrimitiveRasterizer/context:cpp)
 
 ## 效果预览  
 ![image](./markdown_img/phong-shading.gif)
@@ -14,3 +14,17 @@
 ## 第三方库  
 Eigen
 Opencv
+
+---
+## 更新历史
+> v0.2
+>
+> MVVM代码解耦
+
+> v0.1.1
+> 
+> 增加lgtm持续集成
+
+> v0.1
+> 
+> 完成基础光栅化内容和着色
