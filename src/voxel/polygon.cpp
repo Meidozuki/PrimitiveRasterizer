@@ -10,8 +10,6 @@
 #define SEE_VERTEX_AND_NORMAL 0
 
 namespace voxel {
-//static member
-ColorType Mesh::mesh_color = Vector3f(1,1,1);
 
 void Mesh::getTriangles(std::vector<Triangle> &tri_list) {
     const int len = indices_.size();
