@@ -4,9 +4,26 @@
 
 #include <iostream>
 #include <any>
+using std::cout,std::endl;
 
-void f(std::any a) {}
+class A{
+public:
+    int apub;
+    void fapub() {}
+protected:
+    int apro;
+    void fapro() {}
+private:
+    int apri;
+    void fapri() {}
+    virtual void f() =0;
+};
 
-int main (void) {
-    ;
+class B: protected A {
+public:
+    int apub;
+};
+
+int main () {
+    cout << __FILE__ << "at line " << __LINE__ << endl;
 }

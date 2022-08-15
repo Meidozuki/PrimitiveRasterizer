@@ -14,7 +14,7 @@
 #include "voxel/polygon.hpp"
 #include "viewmodel/viewmodel.hpp"
 
-#if 0
+#if 1
   #include "debug_test_example.cpp"
 #endif
 
@@ -22,6 +22,11 @@ using std::cout;
 using std::endl;
 
 int main() {
+    //TODO
+    //--1.预编译头
+    //2.开始写tutorial，注明based on v0.2
+    //3.尝试引入qt
+
     std::default_random_engine e;
     std::uniform_real_distribution<float> u(0,1);
 
@@ -31,42 +36,43 @@ int main() {
     ObjLoader obj_loader;
     obj_loader.loadObjFile("../cow.obj");
 
-//    auto& vertices=obj_loader.vertices_buf;
-//    for (Eigen::Vector3i &index: obj_loader.indices_buf) {
-//        Triangle tri;
-//        for (int i=0;i < 3;++i) {
-//            int idx=index[i]-1;
-//            auto vert=vertices[idx];
-//            tri.setVertex(i, vert);
-//        }
-//        float col=tanh(tri.vertex(0).z())/2+0.5;
-//        col=1;
-//        tri.setColor(0,{0,1,col});
-//        tri.setColor(1,{0,1,col});
-//        tri.setColor(2,{0,1,col});
-//        tri.setNormals({});
-//        triangle_list.push_back(std::move(tri));
-//    }
+    auto& vertices=obj_loader.vertices_buf;
+    for (Eigen::Vector3i &index: obj_loader.indices_buf) {
+        Triangle tri;
+        for (int i=0;i < 3;++i) {
+            int idx=index[i]-1;
+            auto vert=vertices[idx];
+            tri.setVertex(i, vert);
+        }
+        float col=tanh(tri.vertex(0).z())/2+0.5;
+        tri.setAllColors({0.5,0.5,0.5});
+        tri.setNormals({});
+        triangle_list.push_back(std::move(tri));
+    }
 //    raster.draw(triangle_list);
 
-    {
-    float startX=-0.2,startY=0.2,startZ=-0.2, cube_size=0.1;
-    int n_cubes=5;
+//    {
+//    float startX=-0.2,startY=0.2,startZ=-0.2, cube_size=0.1;
+//    int n_cubes=5;
 
-    for (int i=0;i < n_cubes;++i) {
-        for (int j=0;j < n_cubes;++j) {
-            float left = startX + cube_size*2*i;
-            float bottom = startY + cube_size*2*j;
-
-            ColorType color(1.0-(1.0*i/n_cubes),i*cube_size,(1.0*i/n_cubes));
-            voxel::Mesh::setMeshColor(color);
-            voxel::Cube cube(left,bottom,startZ,left+cube_size,bottom+cube_size,startZ+cube_size);
-            cube.getTriangles(triangle_list);
-        }
-    }
-    }
+//    for (int i=0;i < n_cubes;++i) {
+//        for (int j=0;j < n_cubes;++j) {
+//            float left = startX + cube_size*2*i;
+//            float bottom = startY + cube_size*2*j;
+//
+//            ColorType color(1.0-(1.0*i/n_cubes),i*cube_size,(1.0*i/n_cubes));
+//            voxel::Mesh::setMeshColor(color);
+//            voxel::Cube cube(left,bottom,startZ,left+cube_size,bottom+cube_size,startZ+cube_size);
+//            cube.getTriangles(triangle_list);
+//        }
+//    }
+//    }
 
     ViewModel vm;
+
+//    test_triangle();
+//    test_cone();
+//    test_cubes();
 
     int key =0;
     while (key != 27 && key != '\b') {
@@ -74,9 +80,6 @@ int main() {
         vm.model_.clearBuffer(Buffers::Color | Buffers::Depth);
 
 
-
-//        test_triangle();
-//        test_cone();
 
 
 //        raster.draw(triangle_list);

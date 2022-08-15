@@ -40,6 +40,10 @@ target_include_directories(Rasterizer PUBLIC
         "${PROJECT_BINARY_DIR}"
         )
 
+target_precompile_headers(Rasterizer
+        PRIVATE src/util_define.hpp
+        )
+
 #check opencv dll
 set(OpenCV_STATIC ON)
 file(GLOB DLLS_

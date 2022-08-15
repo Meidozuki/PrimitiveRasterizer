@@ -2,6 +2,7 @@
 // Created on 2022/6/4.
 //
 
+#include <vector>
 #include <Eigen/Core>
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/core.hpp>
@@ -42,7 +43,7 @@ void test_cone(){
     raster.clearBuffer(Buffers::Color | Buffers::Depth);
 
     raster.setModel(getModelMatrix(0));
-    raster.setView(getViewMatrix({0,0,3}));
+    raster.setView(getViewMatrix({0,1.4,3}));
     raster.setProjection(GetProjectionMatrix(60, 1, 0.1, 10));
 
     std::vector<Triangle> triangle_list;
@@ -60,4 +61,39 @@ void test_cone(){
     cv::cvtColor(image,image,cv::COLOR_BGR2RGB);
     cv::flip(image,image,0); //竖直翻转
     cv::imshow("cone test",image);
+}
+
+void test_cubes(){
+    const int height=300,width=400;
+    Rasterizer raster(height,width);
+    raster.clearBuffer(Buffers::Color | Buffers::Depth);
+
+    raster.setModel(getModelMatrix(30));
+    raster.setView(getViewMatrix({0,1,2}));
+    raster.setProjection(GetProjectionMatrix(60, 1, 0.1, 10));
+
+    std::vector<Triangle> triangle_list;
+
+    float startX=-0.2,startY=0.2,startZ=-0.2, cube_size=0.1;
+    int n_cubes=5;
+
+    for (int i=0;i < n_cubes;++i) {
+        for (int j=0;j < n_cubes;++j) {
+            float left = startX + cube_size*2*i;
+            float bottom = startY + cube_size*2*j;
+
+            ColorType color(1.0-(1.0*i/n_cubes),i*cube_size,(1.0*i/n_cubes));
+            voxel::Mesh::setMeshColor(color);
+            voxel::Cube cube(left,bottom,startZ,left+cube_size,bottom+cube_size,startZ+cube_size);
+            cube.getTriangles(triangle_list);
+        }
+    }
+
+    raster.draw(triangle_list);
+
+    cv::Mat image(height,width,CV_32FC3);
+    cv::eigen2cv(raster.framebuffer(),image);
+    cv::cvtColor(image,image,cv::COLOR_BGR2RGB);
+    cv::flip(image,image,0); //竖直翻转
+    cv::imshow("cube test",image);
 }

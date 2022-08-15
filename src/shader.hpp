@@ -9,7 +9,6 @@
 
 #include <Eigen/Core>
 
-#include "util_define.hpp"
 #include "illuminant.hpp"
 
 using std::optional;

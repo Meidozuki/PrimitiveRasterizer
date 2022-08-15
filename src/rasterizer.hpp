@@ -12,7 +12,6 @@
 #include <Eigen/Core>
 #include "unsupported/Eigen/CXX11/Tensor"
 
-#include "util_define.hpp"
 #include "triangle.hpp"
 #include "shader.hpp"
 

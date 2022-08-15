@@ -6,7 +6,6 @@
 
 #include <Eigen/Geometry>  //cross
 
-#include "util_func.hpp"
 
 static inline const Eigen::Vector3f getDefaultCameraLookat() {
     Eigen::Vector3f v(0,0,-1);

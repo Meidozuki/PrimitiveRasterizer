@@ -8,8 +8,6 @@
 #include <climits>
 #include <array>
 
-#include "util_define.hpp"
-#include "util_func.hpp"
 #include "straight_line.hpp"
 #include "basic_matrix.hpp"
 #include "image_io.hpp"
@@ -18,6 +16,8 @@ using Tuple3Df = std::tuple<float, float, float>;
 using std::cout, std::endl;
 
 //返回一个lambda表达式
+//比起全局变量，这种方法会多一步lea，但是由于参数不同，不使用全局
+//为了能兼容多线程，也不适用全局变量更改参数的方法
 struct InterpolateFn {
     //alpha -> AB, beta -> AC
     float alpha, beta, gamma;
@@ -30,7 +30,6 @@ struct InterpolateFn {
     }
 };
 
-//TODO:去看下汇编这两种是否有性能差异
 //直接定义一个函数类实例
 static struct {
     template <typename T>
