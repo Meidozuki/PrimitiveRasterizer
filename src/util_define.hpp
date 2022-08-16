@@ -5,8 +5,6 @@
 #ifndef MAIN_CPP_SRC_UTIL_DEFINE_HPP_
 #define MAIN_CPP_SRC_UTIL_DEFINE_HPP_
 
-#include <sstream>
-#include <stdexcept>
 
 #define GENERAL_DEBUG_MODE 1
 #define VERBOSE_DEBUG_MODE 1
