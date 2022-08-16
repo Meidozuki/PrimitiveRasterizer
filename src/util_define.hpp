@@ -16,7 +16,6 @@
 using Vector3fCRef = const Eigen::Vector3f&;
 using ColorType = Eigen::Vector3f;
 
-
 inline Eigen::Vector4f Vector3to4(const Eigen::Vector3f &v, float w = 1.0f) {
     return {v.x(), v.y(), v.z(), w};
 }

@@ -39,7 +39,6 @@ target_link_libraries(Rasterizer ${OpenCV_LIBS})
 target_include_directories(Rasterizer PUBLIC
         "${PROJECT_BINARY_DIR}"
         )
-
 target_precompile_headers(Rasterizer
         PRIVATE src/util_define.hpp
         )

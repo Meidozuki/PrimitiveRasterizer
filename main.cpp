@@ -14,7 +14,7 @@
 #include "voxel/polygon.hpp"
 #include "viewmodel/viewmodel.hpp"
 
-#if 1
+#if 0
   #include "debug_test_example.cpp"
 #endif
 
