@@ -126,7 +126,7 @@ inline bool insideTriangle_Barycentric(float a,float b,float c) {
 }
 
 bool insideTriangle(int x, int y, const std::array<Vector3f, 3> &vertices) {
-    //由于在二维平面上，点(x,y)一定宇三角形共面
+    //由于在二维平面上，点(x,y)一定与三角形共面
     //那么(x,y)一定能插值出唯一确定的z，于是可以丢弃z轴信息
 
     //ps: Eigen计算叉乘只支持三维
@@ -149,11 +149,7 @@ void Rasterizer::drawTriangle(const Triangle &tri, const array<Vector3f, 3> &sha
     //TODO: 处理edge情况
     Eigen::Matrix3f vertex_data;
     vertex_data << tri.vertex(0), tri.vertex(1), tri.vertex(2);
-//
-//    Vector3f &&min_v = vertex_data.rowwise().minCoeff();
-//    int infX = std::floor(min_v.x()), infY = std::floor(min_v.y());
-//    Vector3f &&max_v = vertex_data.rowwise().maxCoeff();
-//    int supX = std::floor(max_v.x()), supY = std::floor(max_v.y());
+
     auto [min_v,max_v] = findBoundary(tri.getVertices());
     int infX = std::floor(min_v.x()),
         infY = std::floor(min_v.y());
@@ -163,7 +159,7 @@ void Rasterizer::drawTriangle(const Triangle &tri, const array<Vector3f, 3> &sha
 #if GENERAL_DEBUG_MODE
     if (infX < 0 || infY < 0 || supX >= width_ || supY >= height_) {
         std::cerr << "drawTriangle: X or Y out of range,consider clip" << std::endl;
-        std::cerr << "infX,infY,supX,supY = " << infX << ',' << infY<< ',' << supX << ',' << supY << std::endl;
+        std::cerr << "infX,infY,supX,supY = " << infX << ',' << infY << ',' << supX << ',' << supY << std::endl;
         infX = std::max(0,infX), infY = std::max(0,infY);
         supX = std::min(width_,supX), supY = std::min(height_,supY);
     }

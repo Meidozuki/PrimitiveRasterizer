@@ -8,7 +8,7 @@
 
 # Eigen库的引入
 
-在[eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page)官网下载源代码，解压，复制解压路径（比如YOURPATH="D:\coding\cmake\eigen-3.3.9），在powershell中执行
+在[Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page)官网下载源代码，解压，复制解压路径（比如YOURPATH="D:\coding\cmake\eigen-3.3.9），在powershell中执行
 
 ```shell
 cd YOURPATH
@@ -28,7 +28,7 @@ cmake --build . #这行其实不用输入，因为eigen已经完成工作了
 cmake --install . --prefix=./install
 ```
 
-YOURPATH/build/install目录下就是安装完成的eigen库了，当然去掉--prefix可以安装到默认路径，修改prefix可以安装到项目文件中。
+YOURPATH/build/install目录下就是安装完成的Eigen库了，当然去掉--prefix可以安装到默认路径，修改prefix可以安装到项目文件中。
 
 # CMakeLists的编写
 

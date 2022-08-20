@@ -94,7 +94,7 @@ int main() {
 
 ```
 
-我们定义了一个光栅化渲染器raster，然后让它画一条线。接下来用opencv的接口将eigen tensor转为cv::Mat，然后使用cv::imshow显示图片。接下来我们转到具体实现。
+我们定义了一个光栅化渲染器raster，然后让它画一条线。接下来用opencv的接口将Eigen tensor转为cv::Mat，然后使用cv::imshow显示图片。接下来我们转到具体实现。
 
 这里我们先使用DDA算法来划线（GAMES101友情链接：https://sites.cs.ucsb.edu/~lingqi/teaching/games101.html）。简单来说，DDA算法就是用让x以1为步长，每一次计算y的累加值，四舍五入后绘制（x,y）点。更详细的内容可以看其他CG资料。
 
