@@ -11,11 +11,13 @@ option(Raster_ObjLoader_primitive OFF "使用自己写的objloader而不是调�
 
 
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")
+#    set(THIRD_LIB_PATH ${PROJECT_SOURCE_DIR}/3Party)
+    set(THIRD_LIB_PATH D:/coding/3rdParty/install)
     #eigen package
-    include_directories(3Party/eigen/include/eigen3)
+    include_directories(${THIRD_LIB_PATH}/eigen/include/eigen3)
     #opencv package
     find_package(OpenCV REQUIRED
-            PATHS 3Party/opencv)
+            PATHS ${THIRD_LIB_PATH}/opencv)
 elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
     find_package(eigen3)
     include_directories(/usr/include/eigen3/)
@@ -46,7 +48,7 @@ target_precompile_headers(Rasterizer
         )
 
 #check opencv dll
-set(OpenCV_STATIC ON)
+#set(OpenCV_STATIC ON)
 file(GLOB DLLS_
         ${PROJECT_BINARY_DIR}/*.dll)
 list(LENGTH DLLS_ DLLS_num)
