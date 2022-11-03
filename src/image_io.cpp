@@ -20,7 +20,7 @@ namespace filesystem = std::filesystem;
 namespace imageio {
     short int auto_cnt = 0;
 
-    cv::Mat eigen2cv_(Rasterizer &raster) {
+    cv::Mat eigen2cv_(const Rasterizer &raster) {
         cv::Mat image(raster.height(), raster.width(), CV_32FC3);
         cv::eigen2cv(raster.framebuffer(),image);
         cv::cvtColor(image,image,cv::COLOR_BGR2RGB);
@@ -28,7 +28,7 @@ namespace imageio {
         return image;
     }
 
-    void show_img(Rasterizer &raster, const std::string &title) {
+    void show_img(const Rasterizer &raster, const std::string &title) {
         cv::Mat image = eigen2cv_(raster);
 //        image.convertTo(image,CV_8UC3);
         cv::imshow(title,image);

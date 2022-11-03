@@ -23,8 +23,8 @@ namespace imageio {
     void clear_dir(std::string path);
 
 
-    void show_img(Rasterizer &raster, const std::string &title = "image");
-    cv::Mat eigen2cv_(Rasterizer &raster);
+    void show_img(const Rasterizer &raster, const std::string &title = "image");
+    cv::Mat eigen2cv_(const Rasterizer &raster);
 }
 
 #endif //RASTERIZER_IMAGE_IO_HPP

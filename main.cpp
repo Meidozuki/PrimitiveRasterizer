@@ -12,7 +12,8 @@
 #include "image_io.hpp"
 #include "obj_loader.hpp"
 #include "voxel/polygon.hpp"
-#include "viewmodel/viewmodel.hpp"
+#include "MVVM/model/model_interface.hpp"
+#include "MVVM/viewmodel/viewmodel.hpp"
 
 #if 0
   #include "debug_test_example.cpp"
@@ -22,8 +23,8 @@ using std::cout;
 using std::endl;
 
 int main() {
-    std::default_random_engine e;
-    std::uniform_real_distribution<float> u(0,1);
+//    std::default_random_engine e;
+//    std::uniform_real_distribution<float> u(0,1);
 
 
     std::vector<Triangle> triangle_list;
@@ -66,12 +67,16 @@ int main() {
     }
     }
 
+
+
+
+
     ViewModel vm;
+    vm.setModel(std::make_unique<VMModel>());
 
     int key =0;
     while (key != 27 && key != '\b') {
-//        raster.clearBuffer(Buffers::Color | Buffers::Depth);
-        vm.model_.clearBuffer(Buffers::Color | Buffers::Depth);
+        vm.clear_cmd_.execute();
 
 
 
@@ -79,18 +84,17 @@ int main() {
 //        test_cone();
 
 
-//        raster.draw(triangle_list);
-//        show_img(raster);
-        vm.model_.draw(triangle_list);
-        imageio::show_img(vm.model_);
+        vm.draw(triangle_list);
+        vm.show();
 
         key = cv::waitKey(100);
 //        cout << "key " << key << endl;
-        vm.triggerFunc("angle_plus");
+        vm.rotate_cmd_.setParameter(std::string_view("plus"));
+        vm.rotate_cmd_.execute();
 
     }
 
-    vm.model_.saveImage();
+//    vm.model_.saveImage();
 
     return 0;
 }

@@ -6,27 +6,34 @@
 #define RASTERIZER_MODEL_INTERFACE_HPP
 
 #include "rasterizer.hpp"
+#include "image_io.hpp"
 
-class ViewModel;
+#include "VBAO/model.hpp"
 
-class VMModel : public Rasterizer {
+
+class VMModel : public vbao::ModelBase,
+                protected Rasterizer{
     //作为渲染器对ViewModel的接口，减少ViewModel对渲染器的耦合
     //目标：1.Raster不知道Model 2.ViewModel不知道Raster
 
 public:
-//    template<typename ...Args>
-//    VMModel(Args ...args):Rasterizer(args...) {}
 
     VMModel();
+    VMModel(VMModel &&ano) = default;
 
     //debug用
-    explicit VMModel(const Rasterizer &r): Rasterizer(r) {}
+//    explicit VMModel(const Rasterizer &r): raster_(r) {}
 
-    void registerFunctionDict(float delta);
+    using Rasterizer::clearBuffer;
+    using Rasterizer::draw;
+
     void saveImage();
-private:
     void moveEye(DType dx,DType dy,DType dz);
     void modelRotate(DType theta);
+
+    void show() {
+        imageio::show_img(*this);
+    }
 };
 
 #endif //RASTERIZER_MODEL_INTERFACE_HPP
