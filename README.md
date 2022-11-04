@@ -17,6 +17,14 @@ Opencv
 
 ---
 ## 更新历史
+> v0.2.2
+>
+> 从lgtm.com移动到github action code analysis
+
+> v0.2.1
+>
+> 更新MVVM框架
+
 > v0.2
 >
 > MVVM代码解耦
