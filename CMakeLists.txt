@@ -9,8 +9,8 @@ configure_file(config.h.in config.h)
 
 option(Raster_ObjLoader_primitive OFF "使用自己写的objloader而不是调用现成")
 
-#test
-include_directories(D:/coding/git/VBAO/Lib_VBao)
+set(VBAO_DIR "D:/coding/git/VBAO/Lib_VBao" CACHE PATH "")
+include_directories(${VBAO_DIR})
 
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")
 #    set(THIRD_LIB_PATH ${PROJECT_SOURCE_DIR}/3Party)
@@ -23,7 +23,7 @@ if (CMAKE_SYSTEM_NAME MATCHES "Windows")
 elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
     find_package(eigen3)
     include_directories(/usr/include/eigen3/)
-    find_package(OpenCV 4.5.0 REQUIRED
+    find_package(OpenCV 4.5 ... REQUIRED
             PATHS ${CMAKE_SOURCE_DIR}/3Party/linux-build/opencv-install)
 endif()
 message(${OpenCV_VERSION})
