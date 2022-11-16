@@ -15,18 +15,12 @@
 #include "MVVM/model/model_interface.hpp"
 #include "MVVM/viewmodel/viewmodel.hpp"
 
-#if 0
-  #include "debug_test_example.cpp"
-#endif
+//#include "debug_test_example.cpp"
 
 using std::cout;
 using std::endl;
 
 int main() {
-//    std::default_random_engine e;
-//    std::uniform_real_distribution<float> u(0,1);
-
-
     std::vector<Triangle> triangle_list;
 
     ObjLoader obj_loader;
@@ -51,7 +45,7 @@ int main() {
 //    raster.draw(triangle_list);
 
     {
-    float startX=-0.2,startY=0.2,startZ=-0.2, cube_size=0.1;
+    float startX=-0.2,startY=1,startZ=-0.2, cube_size=0.1;
     int n_cubes=5;
 
     for (int i=0;i < n_cubes;++i) {
@@ -65,6 +59,11 @@ int main() {
             cube.getTriangles(triangle_list);
         }
     }
+
+    voxel::Mesh::setMeshColor({1,0,0});
+
+    voxel::Sphere ball(Vector3f(0,0,0.5),0.4,100,20);
+    ball.getTriangles(triangle_list);
     }
 
 

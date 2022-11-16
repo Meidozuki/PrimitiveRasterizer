@@ -26,7 +26,7 @@ elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
     find_package(OpenCV 4.5 REQUIRED
             PATHS ${CMAKE_SOURCE_DIR}/3Party/linux-build/opencv-install)
 endif()
-message(${OpenCV_VERSION})
+message(STATUS ${OpenCV_VERSION})
 include_directories(${OpenCV_INCLUDE_DIRS})
 
 include_directories(src)

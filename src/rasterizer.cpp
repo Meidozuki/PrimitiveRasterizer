@@ -8,6 +8,8 @@
 #include <climits>
 #include <array>
 
+#include <Eigen/Eigen>
+
 #include "util_define.hpp"
 #include "util_func.hpp"
 #include "straight_line.hpp"

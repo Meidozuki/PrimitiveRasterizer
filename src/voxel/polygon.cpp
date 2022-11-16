@@ -4,8 +4,11 @@
 
 #include "polygon.hpp"
 
-#include <cmath>
+#include <cmath> //提供m_pi
 #include <iostream>
+#include <algorithm>
+
+#include <Eigen/Geometry>
 
 #define SEE_VERTEX_AND_NORMAL 0
 
@@ -90,11 +93,9 @@ Rectangle::Rectangle(float top, float left, float bottom, float right,
 }
 
 Circle::Circle(float center_x, float center_y, float radius, int edges, float z) {
-    //TODO:未过检查
-
     float step_angle = 2.0 * M_PI / edges;
     //这里需要统一几何xyz和世界坐标xyz
-    Eigen::Array3f center(center_x,0,center_y);
+    Eigen::Array3f center(center_x,z,center_y);
 
     for (int i=0;i < edges;++i) {
         float angle = step_angle * i;
@@ -104,18 +105,18 @@ Circle::Circle(float center_x, float center_y, float radius, int edges, float z)
     }
 }
 
-Cone::Cone(int edges, const Eigen::Array3f& center, float radius, float tip_relative) {
+Cone::Cone(const Eigen::Array3f &center, int edges, float radius, float tip_relative) {
     assert (edges >= 3);
 #if GENERAL_DEBUG_MODE
-    if (std::abs(tip_relative) < 1e-5) {
+    if (std::abs(tip_relative) < 1e-7) {
         throw std::invalid_argument("Cone received a zero *tip_relative* arg");
     }
 #endif
 
-    float axis_coef = tip_relative > 0 ? 1 : -1;
+    axis_coef_ = tip_relative > 0 ? 1 : -1;
     float step_angle = 2.0 * M_PI / edges;
-    set_tip(Eigen::Array3f(0,tip_relative,0) * radius + center);
-    vertex_pos_.emplace_back(tip_);
+    Eigen::Array3f tip = Eigen::Array3f(0,tip_relative,0) * radius + center;
+    vertex_pos_.emplace_back(tip);
 
     for (int i=0;i < edges;++i) {
         float angle = step_angle * i;
@@ -132,9 +133,24 @@ Cone::Cone(int edges, const Eigen::Array3f& center, float radius, float tip_rela
 
     }
 
+    face_init(edges, false);
+}
+
+Cone::Cone(const voxel::HollowCircle &circle, float tip_relative, bool has_bottom) {
+    axis_coef_ = tip_relative > 0 ? 1 : -1;
+    Eigen::Array3f tip = Eigen::Array3f(0,tip_relative,0) * circle.radius_ + circle.center_;
+    vertex_pos_.emplace_back(tip);
+
+    vertex_pos_.insert(vertex_pos_.end(),
+                       circle.vertex_pos_.begin(),circle.vertex_pos_.end());
+
+    face_init(circle.edges_, has_bottom);
+}
+
+void Cone::face_init(int edges, bool has_bottom) {
     //n-2个底面
     Vector3f bottom_normal(0,-1,0);
-    vertex_normal_.emplace_back(bottom_normal * axis_coef);
+    vertex_normal_.emplace_back(bottom_normal * axis_coef_);
     for (int i=2;i < edges;++i) {
         indices_.emplace_back(1,i,i+1);
         indices_vn_.emplace_back(Vector3i::Constant(0));
@@ -151,15 +167,16 @@ Cone::Cone(int edges, const Eigen::Array3f& center, float radius, float tip_rela
         if (SEE_VERTEX_AND_NORMAL)
             std::cout << normal.transpose() << std::endl;
 
-        vertex_normal_.emplace_back(normal * axis_coef);
+        vertex_normal_.emplace_back(normal * axis_coef_);
         //由于编号0被底面占了，计数从1开始
         assert(idx_vn >= 1);
         indices_vn_.emplace_back(Vector3i::Constant(idx_vn));
     }
+
 }
 
 Cube::Cube(float x1, float y1, float z1, float x2, float y2, float z2) {
-
+    //由于Cube对称性，这里的注释按照笛卡尔坐标而不是世界坐标
     vertex_pos_.emplace_back(x1,y1,z1);
     vertex_pos_.emplace_back(x1,y2,z1);
     vertex_pos_.emplace_back(x2,y1,z1);
@@ -206,5 +223,102 @@ Cube::Cube(float x1, float y1, float z1, float x2, float y2, float z2) {
     indices_.emplace_back(3,6,7);
     indices_vn_.emplace_back(Vector3i::Constant(5));
     indices_vn_.emplace_back(Vector3i::Constant(5));
+}
+
+Frustum::Frustum(const HollowCircle &lower, const HollowCircle &upper) {
+    if (lower.edges_ != upper.edges_) {
+        throw std::invalid_argument("2 circles' edges are different");
+    }
+
+    vertex_pos_.insert(vertex_pos_.begin(),
+                       lower.vertex_pos_.begin(),lower.vertex_pos_.end());
+
+//    Eigen::AngleAxis<float> rot(-M_PI/upper.edges_, Vector3f({0,1,0}));
+//    auto &&rotate = rot.toRotationMatrix();
+    for (const auto &v : upper.vertex_pos_) {
+        vertex_pos_.emplace_back(v);
+    }
+
+    int n = lower.edges_;
+    for (int i = 0; i < n; ++i) {
+        //上下三角形穿插
+        //插入顶点顺序按右手螺旋，方便计算normal
+        indices_.emplace_back(i, (i+1)%n, n+i);
+        indices_.emplace_back((i+1)%n, n+(i+1)%n, n+i);
+    }
+
+    float axis_coef_=1;
+    //2n个侧面法向
+    for (int i=0;i < 2*n;++i) {
+        Eigen::Array3i idx = indices_.at(i);
+        int idx_a = idx[0], idx_b = idx[1], idx_c = idx[2];
+
+        Vector3f OA = vertex_pos_.at(idx_b) - vertex_pos_.at(idx_a);
+        Vector3f OB = vertex_pos_.at(idx_c) - vertex_pos_.at(idx_a);
+        const Vector3f &&normal = OB.cross(OA).normalized();
+
+        vertex_normal_.emplace_back(normal * axis_coef_);
+        indices_vn_.emplace_back(Vector3i::Constant(i));
+    }
+}
+
+Sphere::Sphere(const Eigen::Array3f &center, const float radius, int edges, int parallel) {
+    assert(edges >= 3);
+    assert(parallel > 0);
+
+    //准备构造纬度圈
+    std::vector<HollowCircle> circles;
+    circles.reserve(2*parallel);
+    Eigen::Array3f bias(0,0,radius);
+    auto cal_sin = [radius] (const Eigen::Array3f &bias) {
+        float cos = bias.z();
+        return std::sqrt(radius*radius - cos*cos);
+    };
+    //构造纬度圈
+    double angle=0;
+    for (int i = 1-parallel; i < parallel; ++i) {
+        Eigen::Array3f c_bias = (bias / parallel * i);
+        HollowCircle circle(c_bias + center, cal_sin(c_bias), edges);
+
+        //旋转圈，使其能形成三角形交错而不是矩形
+        Eigen::AngleAxis<float> rot(-angle, Vector3f({0,1,0}));
+        auto &&rotate = rot.toRotationMatrix();
+        auto rotate_fn = [&rotate](auto& x) {x = rotate*x;};
+        std::for_each(circle.vertex_pos_.begin(),circle.vertex_pos_.end(),rotate_fn);
+        std::for_each(circle.vertex_normal_.begin(),circle.vertex_normal_.end(),rotate_fn);
+
+        circles.emplace_back(std::move(circle));
+        angle += M_PI/edges;
+    }
+
+    //底部顶部圆锥
+    float last_cos = double(radius) / parallel;
+    float relative_tip = last_cos / circles.at(0).radius_;
+    Cone cone_bot(circles.at(0),-relative_tip),
+        cone_top(circles.at(circles.size()-1),relative_tip);
+
+    auto copy_from_other = [this](Mesh3D &ano) {
+        auto num_pos = Eigen::Vector3i::Constant(this->vertex_pos_.size());
+        this->vertex_pos_.insert(this->vertex_pos_.end(),
+                                 ano.vertex_pos_.begin(), ano.vertex_pos_.end());
+
+        for (Vector3i &idx : ano.indices_) {
+            this->indices_.emplace_back(idx+num_pos);
+        }
+
+        auto num_vn = Eigen::Vector3i::Constant(this->vertex_normal_.size());
+        this->vertex_normal_.insert(this->vertex_normal_.end(),
+                                 ano.vertex_normal_.begin(), ano.vertex_normal_.end());
+        for (Vector3i &idx : ano.indices_vn_) {
+            this->indices_vn_.emplace_back(idx+num_vn);
+        }
+    };
+
+    copy_from_other(cone_bot);
+    for (int i=1;i < circles.size();++i) {
+        Frustum frustum(circles.at(i-1),circles.at(i));
+        copy_from_other(frustum);
+    }
+    copy_from_other(cone_top);
 }
 }

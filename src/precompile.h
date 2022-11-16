@@ -15,6 +15,7 @@
 //C++11
 #include <array>
 #include <tuple>
+#include <memory> //smart ptr
 
 //C++17
 #include <optional>
@@ -26,5 +27,6 @@
 
 //eigen
 #include <Eigen/Core>
+#include <Eigen/Geometry>
 
 #endif //RASTERIZER_PRECOMPILE_H

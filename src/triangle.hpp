@@ -9,10 +9,9 @@
 #include <memory>
 #include <cassert>
 #include <cinttypes>
-#include <variant>
-#include <optional>
 
-#include <Eigen/Eigen>
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 
 using std::shared_ptr;
 using Eigen::Vector3f;
