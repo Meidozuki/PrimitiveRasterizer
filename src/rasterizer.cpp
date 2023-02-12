@@ -15,6 +15,7 @@
 #include "straight_line.hpp"
 #include "basic_matrix.hpp"
 #include "image_io.hpp"
+#include "voxel/polygon.hpp"
 
 using Tuple3Df = std::tuple<float, float, float>;
 using std::cout, std::endl;
@@ -147,7 +148,7 @@ bool insideTriangle(int x, int y, const std::array<Vector3f, 3> &vertices) {
 }
 
 
-void Rasterizer::drawTriangle(const Triangle &tri, const array<Vector3f, 3> &shade_point) {
+void Rasterizer::drawTriangle(const Triangle &tri, const array<Vector3f, 3> &shade_point, bool isDraw3D) {
     //TODO: 处理edge情况
     Eigen::Matrix3f vertex_data;
     vertex_data << tri.vertex(0), tri.vertex(1), tri.vertex(2);
@@ -173,15 +174,13 @@ void Rasterizer::drawTriangle(const Triangle &tri, const array<Vector3f, 3> &sha
 
     for (int x = infX;x < supX;++x) {
         for (int y = infY;y < supY;++y) {
-            //若使用C++17结构化绑定，clang会在下面的lambda表达式报warning，因此用C++11版本
-            float alpha, beta, gamma, det;
-            std::tie(alpha, beta, det) = computeBarycentric2D(Vector3f(x,y,0.0), tri.getVertices());
+            auto [alpha, beta, det] = computeBarycentric2D(Vector3f(x,y,0.0), tri.getVertices());
             if (std::abs(det) <= 1e-5) {
                 std::cerr << "drawing a line-shape triangle.\n";
                 return;
             }
             alpha /= det, beta /= det;
-            gamma = 1 - alpha - beta;
+            float gamma = 1 - alpha - beta;
             if (!insideTriangle_Barycentric(alpha,beta,gamma)) {
                 continue;
             }
@@ -197,12 +196,14 @@ void Rasterizer::drawTriangle(const Triangle &tri, const array<Vector3f, 3> &sha
             setDepth(x,y,z);
 
             ColorType interpolated_color = interpolate(tri.color(0), tri.color(1), tri.color(2));
-
+            if (!isDraw3D) {
+                setPixel(x,y,interpolated_color);
+                continue;
+            }
 
             //世界坐标系下的xyz
             Vector3f interpolated_pos = interpolate(shade_point[0], shade_point[1], shade_point[2]);
             Vector3f normal = interpolate(tri.normal(0),tri.normal(1),tri.normal(2));
-
 
             auto new_color = shader_.shadeColor(interpolated_pos, normal, interpolated_color);
 //            std::cout << "color " << interpolated_color.transpose() << " after " << new_color.transpose() << std::endl;
@@ -271,9 +272,27 @@ void Rasterizer::draw(const std::vector<Triangle> &triangles) {
 
 
         //需要更改shading坐标系才能按照标准pipeline
-        drawTriangle(new_tri, tri.getVertices());
+        drawTriangle(new_tri, tri.getVertices(), true);
 
 
     }
 
+}
+
+void Rasterizer::draw2D(const voxel::Mesh2D &object_2d) {
+    //wrapper,是否需要额外重写？
+    std::vector<Triangle> triangles;
+    Vector3f positive(1.0,1.0,0.0), scale(0.5 * width_, 0.5 * height_, 1.0f);
+    OpOnVector3f screenMapping = [&scale, &positive](const Vector3f& v) {
+        return scale.cwiseProduct(v + positive);
+    };
+
+    object_2d.getTriangles(triangles, screenMapping);
+
+    array<Vector3f, 3> placeholder;
+    for (auto &tri: triangles) {
+        /* TODO: clip */
+
+        drawTriangle(tri,placeholder,false);
+    }
 }

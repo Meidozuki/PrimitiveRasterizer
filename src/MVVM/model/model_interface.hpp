@@ -12,7 +12,7 @@
 
 
 class VMModel : public vbao::ModelBase,
-                protected Rasterizer{
+                public Rasterizer{
     //作为渲染器对ViewModel的接口，减少ViewModel对渲染器的耦合
     //目标：1.Raster不知道Model 2.ViewModel不知道Raster
 

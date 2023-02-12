@@ -30,7 +30,7 @@ void VMModel::moveEye(DType dx,DType dy,DType dz) {
 
 void VMModel::modelRotate(DType theta) {
     //TODO:整理到raster中
-    static float model_angle = 140;
+    static float model_angle = 20;
     model_angle += theta;
     setModel(getModelMatrix(model_angle));
 }

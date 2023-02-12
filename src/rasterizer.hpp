@@ -7,7 +7,6 @@
 
 #include <iostream>
 #include <tuple>
-#include <map>
 
 #include <Eigen/Core>
 #include "unsupported/Eigen/CXX11/Tensor"
@@ -26,6 +25,10 @@ using Eigen::Dynamic;
 using Eigen::Vector3f;
 using std::stringstream;
 using std::array;
+
+namespace voxel{
+class Mesh2D;
+}
 
 struct Buffers {
     enum Buffer : int{
@@ -87,8 +90,8 @@ public:
 
     void draw(const std::vector<Triangle> &triangles);
     void drawLine(const Vector3f & begin, const Vector3f & end, const ColorType &color);
-    void drawTriangle(const Triangle &tri, const array<Vector3f, 3> &shade_point);
-
+    void drawTriangle(const Triangle &tri, const array<Vector3f, 3> &shade_point, bool isDraw3D = true);
+    void draw2D(const voxel::Mesh2D& object_2d);
 };
 
 

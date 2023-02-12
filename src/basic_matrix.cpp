@@ -8,12 +8,12 @@
 
 #include "util_func.hpp"
 
-static inline const Eigen::Vector3f getDefaultCameraLookat() {
+static inline Eigen::Vector3f getDefaultCameraLookat() {
     Eigen::Vector3f v(0,0,-1);
     return std::move(v);
 }
 
-static inline const Eigen::Vector3f getDefaultCameraUpDirection() {
+static inline Eigen::Vector3f getDefaultCameraUpDirection() {
     Eigen::Vector3f v(0,1,0);
     return std::move(v);
 }
