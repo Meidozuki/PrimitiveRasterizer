@@ -194,6 +194,10 @@ void Circle::getTriangles(std::vector<Triangle> &tri_list, OpOnVector3f &outer_o
     }
 }
 
+void DynamicCircle::getTriangles(std::vector<Triangle> &tri_list, OpOnVector3f &outer_op) const {
+    //TODO
+}
+
 //Cone::Cone(const Eigen::Array3f &center, int edges, float radius, float tip_relative) {
 //    assert (edges >= 3);
 //#if GENERAL_DEBUG_MODE

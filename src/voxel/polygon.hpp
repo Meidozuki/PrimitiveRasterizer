@@ -146,6 +146,17 @@ protected:
     ConstCircleWEdges();
 };
 
+class DynamicCircle: public Circle {
+private:
+    int edges_;
+public:
+    DynamicCircle(const Eigen::Vector2f &center, float radius, unsigned int edges):
+        Circle(center,radius),edges_(edges)
+        {}
+
+    void getTriangles(std::vector<Triangle> &tri_list, OpOnVector3f &outer_op) const override;
+};
+
 
 /**
  * @brief HollowMesh意为绘制Mesh3D时提供顶点等快捷方法，最终运行性能视情况而定

@@ -51,7 +51,7 @@ target_precompile_headers(Rasterizer
         )
 
 #check opencv dll
-#set(OpenCV_STATIC ON)
+set(OpenCV_STATIC ON)
 file(GLOB DLLS_
         ${PROJECT_BINARY_DIR}/*.dll)
 list(LENGTH DLLS_ DLLS_num)
@@ -79,5 +79,5 @@ endif()
 unset(DLLS_num)
 unset(DLLS_)
 
-#add_subdirectory(src)
-#add_subdirectory(googletest)
+add_subdirectory(src)
+add_subdirectory(unittest)

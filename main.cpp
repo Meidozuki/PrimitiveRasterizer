@@ -68,13 +68,13 @@ int main() {
 
     voxel::TriangleMesh::setMeshColor({1,0,0});
 
-    VMModel model;
+    VMModel_Debug model;
     voxel::Rectangle rect({0.2, 0.2},0.2,0.2);
     voxel::Circle circle({0,0},0.3);
     model.clearBuffer(Buffers::Color | Buffers::Depth);
     model.draw2D(rect);
     model.draw2D(circle);
-    imageio::show_img(model);
+    imageio::show_img(model.asRasterizer());
     cv::waitKey();
     return 0;
 

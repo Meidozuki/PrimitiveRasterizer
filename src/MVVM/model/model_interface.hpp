@@ -12,10 +12,12 @@
 
 
 class VMModel : public vbao::ModelBase,
-                public Rasterizer{
+                protected Rasterizer{
     //作为渲染器对ViewModel的接口，减少ViewModel对渲染器的耦合
     //目标：1.Raster不知道Model 2.ViewModel不知道Raster
-
+    friend class VMModel_Debug;
+protected:
+    using Rasterizer::Rasterizer;
 public:
 
     VMModel();
@@ -33,6 +35,15 @@ public:
 
     void show() {
         imageio::show_img(*this);
+    }
+};
+
+class VMModel_Debug:public VMModel {
+public:
+    using VMModel::VMModel;
+    using Rasterizer::draw2D;
+    auto& asRasterizer() {
+        return *static_cast<Rasterizer*>(this);
     }
 };
 

@@ -2,13 +2,17 @@
 project(Google_tests)
 
 # 'lib' is the folder with Google Test sources
-add_subdirectory(lib)
+add_subdirectory(googletest-release-1.12.1)
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
+#使用opencvdll
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY   ${CMAKE_BINARY_DIR})
+
 # 'Google_Tests_run' is the target name
-add_executable(Google_Tests_run test1.cpp test_draw_line_algorithm.cpp )
+add_executable(Google_Tests_run test1.cpp)
 target_link_libraries(Google_Tests_run gtest gtest_main)
 target_link_libraries(Google_Tests_run Raster_src_lib)
+
 
 function(add_gtest_exe exe src)
     add_executable(${exe} ${src})
@@ -16,5 +20,5 @@ function(add_gtest_exe exe src)
     target_link_libraries(${exe} Raster_src_lib)
 endfunction()
 
-add_gtest_exe(gtest_time time_comparation.cpp )
+#add_gtest_exe(gtest_time test1.cpp )
 #add_gtest_exe(gtest_time time_comparation_2.cpp )
