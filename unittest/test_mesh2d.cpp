@@ -41,7 +41,7 @@ TEST(test2d,rectangle) {
     }
 
     imshow(model);
-    cv::waitKey(500);
+    cv::waitKey(1000);
 }
 
 TEST(test2d,circle) {
@@ -49,7 +49,7 @@ TEST(test2d,circle) {
         imageio::show_img(model.asRasterizer(),"circle-test");
     };
 
-    VMModel_Debug model(400,400);
+    VMModel_Debug model(600,600);
     model.clearBuffer(Buffers::Color | Buffers::Depth);
 
     voxel::TriangleMesh::setMeshColor({0,0,1});
@@ -59,7 +59,7 @@ TEST(test2d,circle) {
     }
 
     voxel::TriangleMesh::setMeshColor({1,0,0});
-    std::complex<float> x(1.0), i(0,1.0);
+    std::complex<float> i(0,1.0),x=i;
     for (int _ = 0;_ < 2;++_, x*=i*i) {
         voxel::Circle circle({0.25*x.real(),0.25*x.imag()},0.25);
         model.draw2D(circle);
@@ -68,7 +68,35 @@ TEST(test2d,circle) {
     }
 
     imshow(model);
-    cv::waitKey();
+    cv::waitKey(1000);
+}
+
+TEST(test2d,circle_dynamic) {
+    auto imshow = [](auto &model) {
+        imageio::show_img(model.asRasterizer(),"circle-dynamic-test");
+    };
+
+    VMModel_Debug model(600,600);
+    model.clearBuffer(Buffers::Color | Buffers::Depth);
+
+    voxel::TriangleMesh::setMeshColor({1,0,0});
+    {
+        voxel::CircleDynamic circle({0, 0}, 0.6,32);
+        model.draw2D(circle);
+    }
+
+    voxel::TriangleMesh::setMeshColor({0,1,0});
+    std::complex<float> x(1.0), i(0,1.0);
+    int edge=4;
+    for (int _ = 0;_ < 4;++_, x*=i, edge*=2) {
+        voxel::CircleDynamic circle({0.25*x.real(),0.25*x.imag()},0.2,edge);
+        model.draw2D(circle);
+        imshow(model);
+        cv::waitKey(100);
+    }
+
+    imshow(model);
+    cv::waitKey(1000);
 }
 
 int main (int argc,char** argv) {

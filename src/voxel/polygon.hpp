@@ -84,6 +84,8 @@ protected:
     }
 
 public:
+    virtual ~Mesh2D() = default;
+
     void getTriangles(std::vector<Triangle> &tri_list) const {
         return getTriangles(tri_list, identityFn);
     }
@@ -146,13 +148,12 @@ protected:
     ConstCircleWEdges();
 };
 
-class DynamicCircle: public Circle {
+class CircleDynamic: public Circle, protected TriangleMesh{
 private:
-    int edges_;
+    unsigned int edges_;
+    void fix();
 public:
-    DynamicCircle(const Eigen::Vector2f &center, float radius, unsigned int edges):
-        Circle(center,radius),edges_(edges)
-        {}
+    CircleDynamic(const Eigen::Vector2f &center, float radius, unsigned int edges);
 
     void getTriangles(std::vector<Triangle> &tri_list, OpOnVector3f &outer_op) const override;
 };
@@ -177,15 +178,18 @@ class HollowCircle : protected Circle,public HollowMesh {
 //    }
 };
 
-class Plane : public Drawable3D {
+class Plane : public Drawable3D{
+    std::unique_ptr<Mesh2D> ctx_;
 
+    float z_, normal_dir_;
+
+    Plane(): z_(1.0),normal_dir_(1.0),ctx_(nullptr) { aligned_axis_ = axisZ;}
+public:
     enum AlignedAxis {axisX,axisY,axisZ};
-    AlignedAxis aligned_axis;
-    float z_;
+    AlignedAxis aligned_axis_;
 
-//    Mesh2D(): z_(1.0) {aligned_axis = axisZ;}
-
-    void setAlignedAxis(AlignedAxis axis) {aligned_axis = axis;}
+    void setAlignedAxis(AlignedAxis axis) { aligned_axis_ = axis;}
+    void setNormalDir(bool along_axis) {normal_dir_ = along_axis ? 1.0 : -1.0;}
     void getTriangles(std::vector<Triangle> &tri_list);
 };
 
@@ -195,6 +199,8 @@ class Mesh3D : public Drawable3D, protected TriangleMesh3D{
 public:
     using TriangleMesh3D::vertex_pos_, TriangleMesh3D::indices_,
         TriangleMesh3D::vertex_normal_, TriangleMesh3D::indices_vn_;
+
+    void getTriangles(std::vector<Triangle> &tri_list);
 };
 
 class Cube : public Mesh3D {

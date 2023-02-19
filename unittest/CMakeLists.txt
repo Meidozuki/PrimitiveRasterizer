@@ -5,11 +5,13 @@ project(Google_tests)
 add_subdirectory(googletest-release-1.12.1)
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
-#使用opencvdll
+#使用opencv dll
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY   ${CMAKE_BINARY_DIR})
 
+set(CMAKE_CXX_FLAGS -O1)
+
 # 'Google_Tests_run' is the target name
-add_executable(Google_Tests_run test1.cpp)
+add_executable(Google_Tests_run test_mesh2d.cpp)
 target_link_libraries(Google_Tests_run gtest gtest_main)
 target_link_libraries(Google_Tests_run Raster_src_lib)
 

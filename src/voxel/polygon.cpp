@@ -15,71 +15,6 @@
 
 namespace voxel {
 
-//void Mesh2D::getTriangles(std::vector<Triangle> &tri_list) {
-//    const int len = indices_.size();
-//    for (int i=0;i < len;++i) {
-//        Triangle tri;
-//        for (int j=0;j < 3;++j) {
-//            int vertex_idx = indices_[i][j];
-//            tri.setVertex(j, vertex_pos_[vertex_idx]);
-//        }
-//        tri.setAllColors(Mesh2D::mesh_color);
-//
-//        if (!vertex_normal_.empty() && !indices_vn_.empty()) {
-//            for (int j=0;j < 3;++j) {
-//                int vn_idx = indices_vn_.at(i)[j];
-//                tri.setNormal(j, vertex_normal_.at(vn_idx));
-//            }
-//        }
-//
-//        tri_list.push_back(std::move(tri));
-//    }
-//}
-//
-//void Mesh2D::getTriangles(std::vector<Triangle> &tri_list) {
-//    using std::swap;
-//    std::function<Vector3f (Vector3f&)> swapAxis;
-//    if (aligned_axis == axisX) {
-//        swapAxis = [](Vector3f& v) {
-//          swap(v.x(),v.z());
-//          return v;
-//        };
-//    }
-//    else if (aligned_axis == axisY) {
-//        swapAxis = [](Vector3f& v) {
-//            swap(v.y(),v.z());
-//            return v;
-//        };
-//    }
-//    else {
-//        swapAxis = [](const Vector3f& v) {return v;};
-//    }
-//
-//    const int len = indices_.size();
-//    for (int i=0;i < len;++i) {
-//        Triangle tri;
-//        for (int j=0;j < 3;++j) {
-//            int vertex_idx = indices_[i][j];
-//            //更改xyz顺序
-//            Vector3f vert=vertex_pos_[vertex_idx];
-//            tri.setVertex(j, swapAxis(vert));
-//        }
-//        tri.setAllColors(Mesh2D::mesh_color);
-//
-//        if (!vertex_normal_.empty() && !indices_vn_.empty()) {
-//            for (int j=0;j < 3;++j) {
-//                int vn_idx = indices_vn_.at(i)[j];
-//                //更改normal
-//                Vector3f normal = vertex_normal_.at(vn_idx);
-//                tri.setNormal(j, swapAxis(normal));
-//            }
-//        }
-//
-//        tri_list.push_back(std::move(tri));
-//    }
-//
-//}
-
 //------
 //------Drawable2D
 //------
@@ -194,9 +129,135 @@ void Circle::getTriangles(std::vector<Triangle> &tri_list, OpOnVector3f &outer_o
     }
 }
 
-void DynamicCircle::getTriangles(std::vector<Triangle> &tri_list, OpOnVector3f &outer_op) const {
-    //TODO
+CircleDynamic::CircleDynamic(const Eigen::Vector2f &center, float radius, unsigned int edges):
+    Circle(center,radius),edges_(edges)
+{fix();}
+
+void CircleDynamic::fix() {
+    //假设在x,y属于[-1,1],z=0的平面上
+
+    const float radius = 1.0;
+    const float z = 0.0;
+    const float step_angle = 2.0 * M_PI / edges_;
+    Eigen::Array3f center(0,0,0);
+    const int center_idx = edges_;
+
+    for (int i=0;i < edges_;++i) {
+        float angle = step_angle * i;
+        Eigen::Array3f vert(std::cos(angle),std::sin(angle),z);
+
+        vertex_pos_.emplace_back(vert * radius + center);
+        indices_.emplace_back(center_idx,i,(i+1)%edges_);
+    }
+    vertex_pos_.emplace_back(0,0,z);
 }
+
+void CircleDynamic::getTriangles(std::vector<Triangle> &tri_list, OpOnVector3f &outer_op) const {
+
+    auto opOnVertex = [this,&outer_op](const Vector3f &vertex) {
+        return outer_op(this->simpleAffine2D(vertex));
+    };
+
+    //get vertex
+    std::vector<TriangleVertex> vec;
+
+    for (auto &index: indices_) {
+        TriangleVertex tri;
+        //eigen vector没有实现begin，无法用ranged for
+        tri.at(0) = vertex_pos_[index[0]];
+        tri.at(1) = vertex_pos_[index[1]];
+        tri.at(2) = vertex_pos_[index[2]];
+
+        vec.emplace_back(std::move(tri));
+    }
+
+    //get triangle
+    for (auto &vertex3: vec) {
+        Triangle tri;
+        for (int j=0;j < 3;++j) {
+            auto &&v = opOnVertex(vertex3[j]);
+            tri.setVertex(j, v);
+        }
+        tri.setAllColors(TriangleMesh::mesh_color);
+
+        tri_list.push_back(std::move(tri));
+    }
+}
+
+
+//------
+//------Drawable3D
+//------
+
+
+void Plane::getTriangles(std::vector<Triangle> &tri_list) {
+    using std::swap;
+    std::function<Vector3f& (Vector3f&)> swapAxis;
+    if (aligned_axis_ == axisX) {
+        swapAxis = [](Vector3f& v)->Vector3f& {
+            swap(v.x(),v.z());
+            return v;
+        };
+    }
+    else if (aligned_axis_ == axisY) {
+        swapAxis = [](Vector3f& v)->Vector3f& {
+            swap(v.y(),v.z());
+            return v;
+        };
+    }
+    else {
+        swapAxis = [](Vector3f& v)->Vector3f& {return v;};
+    }
+
+    std::vector<Triangle> triangles;
+    ctx_->getTriangles(triangles);
+
+    for (auto &triangle: triangles) {
+        Triangle new_tri;
+
+        auto &&vertices = triangle.getVertices();
+
+        for (int i=0;i < 3;++i) {
+            //更改xyz顺序
+            Vector3f vert=vertices.at(i);
+            triangle.setVertex(i, swapAxis(vert));
+        }
+        triangle.setAllColors(TriangleMesh::mesh_color);
+
+        Vector3f normal{0,0,normal_dir_};
+
+        for (int i=0;i < 3;++i) {
+            triangle.setNormal(0,swapAxis(normal));
+        }
+
+        tri_list.push_back(std::move(triangle));
+    }
+
+}
+
+
+void Mesh3D::getTriangles(std::vector<Triangle> &tri_list) {
+    const int len = indices_.size();
+    for (int i=0;i < len;++i) {
+        Triangle tri;
+        for (int j=0;j < 3;++j) {
+            int vertex_idx = indices_[i][j];
+            tri.setVertex(j, vertex_pos_[vertex_idx]);
+        }
+        tri.setAllColors(TriangleMesh::mesh_color);
+
+        if (!vertex_normal_.empty() && !indices_vn_.empty()) {
+            for (int j=0;j < 3;++j) {
+                int vn_idx = indices_vn_.at(i)[j];
+                tri.setNormal(j, vertex_normal_.at(vn_idx));
+            }
+        }
+
+        tri_list.push_back(std::move(tri));
+    }
+}
+
+
 
 //Cone::Cone(const Eigen::Array3f &center, int edges, float radius, float tip_relative) {
 //    assert (edges >= 3);
@@ -228,7 +289,7 @@ void DynamicCircle::getTriangles(std::vector<Triangle> &tri_list, OpOnVector3f &
 //
 //    face_init(edges, false);
 //}
-//
+
 //Cone::Cone(const voxel::HollowCircle &circle, float tip_relative, bool has_bottom) {
 //    axis_coef_ = tip_relative > 0 ? 1 : -1;
 //    Eigen::Array3f tip = Eigen::Array3f(0,tip_relative,0) * circle.radius_ + circle.center_;
@@ -267,56 +328,56 @@ void DynamicCircle::getTriangles(std::vector<Triangle> &tri_list, OpOnVector3f &
 //    }
 //
 //}
-//
-//Cube::Cube(float x1, float y1, float z1, float x2, float y2, float z2) {
-//    //由于Cube对称性，这里的注释按照笛卡尔坐标而不是世界坐标
-//    vertex_pos_.emplace_back(x1,y1,z1);
-//    vertex_pos_.emplace_back(x1,y2,z1);
-//    vertex_pos_.emplace_back(x2,y1,z1);
-//    vertex_pos_.emplace_back(x2,y2,z1);
-//    vertex_pos_.emplace_back(x1,y1,z2);
-//    vertex_pos_.emplace_back(x1,y2,z2);
-//    vertex_pos_.emplace_back(x2,y1,z2);
-//    vertex_pos_.emplace_back(x2,y2,z2);
-//
-//    vertex_normal_.emplace_back(0,0,-1);
-//    vertex_normal_.emplace_back(0,0, 1);
-//    vertex_normal_.emplace_back(0,-1,0);
-//    vertex_normal_.emplace_back(0, 1,0);
-//    vertex_normal_.emplace_back(-1,0,0);
-//    vertex_normal_.emplace_back( 1,0,0);
-//
-//    //bottom
-//    indices_.emplace_back(1,2,0);
-//    indices_.emplace_back(1,2,3);
-//    indices_vn_.emplace_back(Vector3i::Constant(0));
-//    indices_vn_.emplace_back(Vector3i::Constant(0));
-//    //front
-//    indices_.emplace_back(2,4,0);
-//    indices_.emplace_back(2,4,6);
-//    indices_vn_.emplace_back(Vector3i::Constant(2));
-//    indices_vn_.emplace_back(Vector3i::Constant(2));
-//    //left
-//    indices_.emplace_back(1,4,0);
-//    indices_.emplace_back(1,4,5);
-//    indices_vn_.emplace_back(Vector3i::Constant(4));
-//    indices_vn_.emplace_back(Vector3i::Constant(4));
-//    //top
-//    indices_.emplace_back(5,6,4);
-//    indices_.emplace_back(5,6,7);
-//    indices_vn_.emplace_back(Vector3i::Constant(1));
-//    indices_vn_.emplace_back(Vector3i::Constant(1));
-//    //back
-//    indices_.emplace_back(3,5,1);
-//    indices_.emplace_back(3,5,7);
-//    indices_vn_.emplace_back(Vector3i::Constant(3));
-//    indices_vn_.emplace_back(Vector3i::Constant(3));
-//    //right
-//    indices_.emplace_back(3,6,2);
-//    indices_.emplace_back(3,6,7);
-//    indices_vn_.emplace_back(Vector3i::Constant(5));
-//    indices_vn_.emplace_back(Vector3i::Constant(5));
-//}
+
+Cube::Cube(float x1, float y1, float z1, float x2, float y2, float z2) {
+    //由于Cube对称性，这里的注释按照笛卡尔坐标而不是世界坐标
+    vertex_pos_.emplace_back(x1,y1,z1);
+    vertex_pos_.emplace_back(x1,y2,z1);
+    vertex_pos_.emplace_back(x2,y1,z1);
+    vertex_pos_.emplace_back(x2,y2,z1);
+    vertex_pos_.emplace_back(x1,y1,z2);
+    vertex_pos_.emplace_back(x1,y2,z2);
+    vertex_pos_.emplace_back(x2,y1,z2);
+    vertex_pos_.emplace_back(x2,y2,z2);
+
+    vertex_normal_.emplace_back(0,0,-1);
+    vertex_normal_.emplace_back(0,0, 1);
+    vertex_normal_.emplace_back(0,-1,0);
+    vertex_normal_.emplace_back(0, 1,0);
+    vertex_normal_.emplace_back(-1,0,0);
+    vertex_normal_.emplace_back( 1,0,0);
+
+    //bottom
+    indices_.emplace_back(1,2,0);
+    indices_.emplace_back(1,2,3);
+    indices_vn_.emplace_back(Vector3i::Constant(0));
+    indices_vn_.emplace_back(Vector3i::Constant(0));
+    //front
+    indices_.emplace_back(2,4,0);
+    indices_.emplace_back(2,4,6);
+    indices_vn_.emplace_back(Vector3i::Constant(2));
+    indices_vn_.emplace_back(Vector3i::Constant(2));
+    //left
+    indices_.emplace_back(1,4,0);
+    indices_.emplace_back(1,4,5);
+    indices_vn_.emplace_back(Vector3i::Constant(4));
+    indices_vn_.emplace_back(Vector3i::Constant(4));
+    //top
+    indices_.emplace_back(5,6,4);
+    indices_.emplace_back(5,6,7);
+    indices_vn_.emplace_back(Vector3i::Constant(1));
+    indices_vn_.emplace_back(Vector3i::Constant(1));
+    //back
+    indices_.emplace_back(3,5,1);
+    indices_.emplace_back(3,5,7);
+    indices_vn_.emplace_back(Vector3i::Constant(3));
+    indices_vn_.emplace_back(Vector3i::Constant(3));
+    //right
+    indices_.emplace_back(3,6,2);
+    indices_.emplace_back(3,6,7);
+    indices_vn_.emplace_back(Vector3i::Constant(5));
+    indices_vn_.emplace_back(Vector3i::Constant(5));
+}
 //
 //Frustum::Frustum(const HollowCircle &lower, const HollowCircle &upper) {
 //    if (lower.edges_ != upper.edges_) {

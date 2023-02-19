@@ -33,7 +33,6 @@ struct InterpolateFn {
     }
 };
 
-//TODO:去看下汇编这两种是否有性能差异
 //直接定义一个函数类实例
 static struct {
     template <typename T>
