@@ -23,26 +23,6 @@ using std::endl;
 int main() {
     std::vector<Triangle> triangle_list;
 
-    ObjLoader obj_loader;
-    obj_loader.loadObjFile("../cow.obj");
-
-//    auto& vertices=obj_loader.vertices_buf;
-//    for (Eigen::Vector3i &index: obj_loader.indices_buf) {
-//        Triangle tri;
-//        for (int i=0;i < 3;++i) {
-//            int idx=index[i]-1;
-//            auto vert=vertices[idx];
-//            tri.setVertex(i, vert);
-//        }
-//        float col=tanh(tri.vertex(0).z())/2+0.5;
-//        col=1;
-//        tri.setColor(0,{0,1,col});
-//        tri.setColor(1,{0,1,col});
-//        tri.setColor(2,{0,1,col});
-//        tri.setNormals({});
-//        triangle_list.push_back(std::move(tri));
-//    }
-//    raster.draw(triangle_list);
 
     {
     float startX=-0.2,startY=1,startZ=-0.2, cube_size=0.1;
@@ -86,7 +66,7 @@ int main() {
         vm.draw(triangle_list);
         vm.show();
 
-        key = cv::waitKey();
+        key = cv::waitKey(500);
 //        cout << "key " << key << endl;
         vm.rotate_cmd_.setParameter(std::string_view("plus"));
         vm.rotate_cmd_.execute();
