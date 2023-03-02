@@ -17,6 +17,11 @@ Opencv
 
 ---
 ## 更新历史
+
+> v0.2.3
+>
+> 优化voxel代码框架，提取半人工test
+> 
 > v0.2.2
 >
 > 从lgtm.com移动到github action code analysis
